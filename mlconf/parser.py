@@ -120,7 +120,7 @@ class TokenStream:
         return re.match(r"[:]", ch)
 
     def is_char(self, ch):
-        return re.match(r"[a-zA-Z_0-9]", ch)
+        return re.match(r"[a-z|A-Z|_|0-9]", ch)
 
     def croak(self, msg):
         self.input.croak(msg)

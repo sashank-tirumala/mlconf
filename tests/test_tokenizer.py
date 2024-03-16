@@ -209,3 +209,51 @@ def test_multi_line_string_num():
         {"type": "string", "value": "hello_world"},
         {"type": "newline", "value": "\n"},
     ]
+
+
+def test_simple_name():
+    inp = "name: value\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+    ]
+
+    inp = "name : value\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+    ]
+
+    inp = "name :value   \n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+    ]
+
+
+def test_complex_name():
+    inp = "name: value_123\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value_123"},
+        {"type": "newline", "value": "\n"},
+    ]
+
+    invalid_inps = [
+        "name: value-uef\n",
+        "name: value+uef\n",
+    ]
+    for inp in invalid_inps:
+        with pytest.raises(SyntaxError):
+            get_tokens(inp)
