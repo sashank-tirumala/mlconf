@@ -55,3 +55,27 @@ def test_hello_world():
         {"type": "string", "value": "hello_world"},
         {"type": "newline", "value": "\n"},
     ]
+
+    inp = "\n" + "string: 'hello_world'\n\n\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "string"},
+        {"type": "punc", "value": ":"},
+        {"type": "string", "value": "hello_world"},
+        {"type": "newline", "value": "\n"},
+        {"type": "newline", "value": "\n"},
+        {"type": "newline", "value": "\n"},
+    ]
+
+    inp = "\n" + "string: 'hell\\%r_world'\n\n\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "string"},
+        {"type": "punc", "value": ":"},
+        {"type": "string", "value": "hell%r_world"},
+        {"type": "newline", "value": "\n"},
+        {"type": "newline", "value": "\n"},
+        {"type": "newline", "value": "\n"},
+    ]
