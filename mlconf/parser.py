@@ -52,8 +52,8 @@ class TokenStream:
         if ch == "#":
             self.skip_comment()
             return self.read_next()
-        elif ch == '"':
-            return self.read_string()
+        elif ch == '"' or ch == "'":
+            return self.read_string(ch)
         elif self.is_digit(ch):
             return self.read_number()
         elif self.is_punc(ch):
@@ -62,7 +62,7 @@ class TokenStream:
             return {"type": "name", "value": self.read_while(self.is_char)}
         elif ch == "\n":
             self.input.next()
-            return {"type": "newline"}
+            return {"type": "newline", "value": "\n"}
         else:
             self.input.croak(f"Can't handle character: {ch}")
 
@@ -85,8 +85,8 @@ class TokenStream:
         self.read_while(lambda ch: ch != "\n")
         self.input.next()
 
-    def read_string(self):
-        return {"type": "string", "value": self.read_escaped('"')}
+    def read_string(self, end='"'):
+        return {"type": "string", "value": self.read_escaped(end)}
 
     def read_escaped(self, end):
         escaped = False
@@ -140,48 +140,58 @@ class AST:
         return not self.__eq__(other)
 
 
-class Parser:
-    def __init__(self, input):
-        self.input = input
+def parse_token_stream(input):
+    ast = {}
+    tokens = []
+    while True:
+        token = input.read_next()
+        if not check_transition(token, tokens):
+            raise SyntaxError("Invalid transition")
+        tokens.append(token)
+        if token is None:
+            break
 
-    def parse(self):
-        ast = {}
-        while True:
-            token = self.input.read_next()
-            if token is None:
-                break
-            if token["type"] == "name":
-                name = token["value"]
-                token = self.input.read_next()
-                if token is None:
-                    self.input.croak("Unexpected end of input")
-                if token["type"] != "punc" or token["value"] != ":":
-                    self.input.croak("Expected :")
-                token = self.input.read_next()
-                if token["type"] == "string" or token["type"] == "number":
-                    value = token["value"]
-                    ast[name] = value
-                elif token["type"] == "indent" or token["type"] == "newline":
-                    value = self.parse()
-                    ast[name] = value
-                else:
-                    self.input.croak("Unexpected token")
-        return AST("root", ast)
+    return AST("root", ast)
 
 
-def parse(config: str):
-    return Parser(config).parse()
+def check_transition(token, tokens):
+    if len(tokens) == 0:
+        return True
+    last_token = tokens[-1]
+
+
+def parse(input):
+    return parse_token_stream(TokenStream(InputStream(input)))
+
+
+def get_tokens(input):
+    tokenstream = TokenStream(InputStream(input))
+    tokens = []
+    while True:
+        token = tokenstream.read_next()
+        if token is None:
+            break
+        tokens.append(token)
+    return tokens
 
 
 if __name__ == "__main__":
     config = """string: "hello_world"
     game:
-            value: 1
+        value : 1
+        box: 1
+
+
+
+            value: 2
+            item:
+                value: 3
     """
-    inp = parse(TokenStream(InputStream(config)))
-    print(inp)
-    # while True:
-    #     token = inp.read_next()
-    #     if token is None:
-    #         break
-    #     print(token)
+    inp = TokenStream(InputStream(config))
+    inp_parse = parse_token_stream(TokenStream(InputStream(config)))
+    print(inp_parse)
+    while True:
+        token = inp.read_next()
+        if token is None:
+            break
+        print(token)
