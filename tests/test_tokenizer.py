@@ -1,7 +1,7 @@
 from mlconf.parser import InputStream, TokenStream, get_tokens
 
 
-def test_hello_world():
+def test_hello_world_simple():
     inp = "string: 'hello_world'\n"
     tokens = get_tokens(inp)
     assert tokens == [
@@ -29,6 +29,8 @@ def test_hello_world():
         {"type": "newline", "value": "\n"},
     ]
 
+
+def test_hello_world_complex():
     inp = 'string :     "hel3qrtlo_wor$$*rld" \n'
     tokens = get_tokens(inp)
     assert tokens == [
