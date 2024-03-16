@@ -106,11 +106,15 @@ class TokenStream:
         return str
 
     def is_digit(self, ch):
-        return re.match(r"\d|\.|-", ch)
+        return re.match(r"\d|\.|\-|\+", ch)
 
     def read_number(self):
-        str = self.read_while(lambda ch: re.match(r"\d|\.|e|-", ch))
-        return {"type": "number", "value": float(str)}
+        str = self.read_while(lambda ch: self.is_digit(ch) or ch == "e")
+        try:
+            val = float(str)
+            return {"type": "number", "value": float(str)}
+        except ValueError:
+            self.input.croak(f"Invalid number: {str}")
 
     def is_punc(self, ch):
         return re.match(r"[:]", ch)
