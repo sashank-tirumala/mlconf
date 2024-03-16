@@ -192,23 +192,57 @@ def test_num_sign():
             get_tokens(inp)
 
 
-def test_multi_line_string_num():
-    inp = "string: 'hello_world'\n" + "num: 123\n" + "string: 'hello_world'\n"
-    tokens = get_tokens(inp)
-    assert tokens == [
+def test_multi_line_simple():
+    string_inp = "string: 'hello_world'"
+    newline_inp = "\n"
+    num_inp = "num: 123"
+    name_inp = "name: value"
+    assert_string = [
         {"type": "name", "value": "string"},
         {"type": "punc", "value": ":"},
         {"type": "string", "value": "hello_world"},
-        {"type": "newline", "value": "\n"},
+    ]
+    assert_newline = [{"type": "newline", "value": "\n"}]
+    assert_num = [
         {"type": "name", "value": "num"},
         {"type": "punc", "value": ":"},
         {"type": "number", "value": 123.0},
-        {"type": "newline", "value": "\n"},
-        {"type": "name", "value": "string"},
-        {"type": "punc", "value": ":"},
-        {"type": "string", "value": "hello_world"},
-        {"type": "newline", "value": "\n"},
     ]
+    assert_name = [
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+    ]
+    inp = string_inp + newline_inp + num_inp + newline_inp + name_inp
+    assert_inp = assert_string + assert_newline + assert_num + assert_newline + assert_name
+    tokens = get_tokens(inp)
+    assert tokens == assert_inp
+
+    inp = string_inp + newline_inp + newline_inp + num_inp + newline_inp + name_inp + newline_inp
+    assert_inp = (
+        assert_string + assert_newline + assert_newline + assert_num + assert_newline + assert_name + assert_newline
+    )
+    tokens = get_tokens(inp)
+    assert tokens == assert_inp
+
+    inp = (
+        string_inp
+        + " "
+        + num_inp
+        + " "
+        + name_inp
+        + " "
+        + string_inp
+        + " "
+        + name_inp
+        + " "
+        + num_inp
+        + " "
+        + string_inp
+    )
+    assert_inp = assert_string + assert_num + assert_name + assert_string + assert_name + assert_num + assert_string
+    tokens = get_tokens(inp)
+    assert tokens == assert_inp
 
 
 def test_simple_name():
