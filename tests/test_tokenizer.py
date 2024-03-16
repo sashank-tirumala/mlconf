@@ -179,7 +179,14 @@ def test_num_sign():
         {"type": "newline", "value": "\n"},
     ]
 
-    inps = ["num : --123\n", "num : ++123\n", "num : +-123\n", "num : -+123\n"]
-    for inp in inps:
+    invalid_inps = [
+        "num : --123\n",
+        "num : ++123\n",
+        "num : +-123\n",
+        "num : -+123\n",
+        "num : +123.456e-+2\n",
+        "num : +123.456.789\n",
+    ]
+    for inp in invalid_inps:
         with pytest.raises(SyntaxError):
             get_tokens(inp)
