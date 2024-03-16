@@ -1,7 +1,7 @@
 from mlconf.parser import InputStream, TokenStream, get_tokens
 
 
-def test_hello_world_simple():
+def test_string_simple():
     inp = "string: 'hello_world'\n"
     tokens = get_tokens(inp)
     assert tokens == [
@@ -30,7 +30,7 @@ def test_hello_world_simple():
     ]
 
 
-def test_hello_world_complex():
+def test_string_complex():
     inp = 'string :     "hel3qrtlo_wor$$*rld" \n'
     tokens = get_tokens(inp)
     assert tokens == [
@@ -49,15 +49,18 @@ def test_hello_world_complex():
         {"type": "newline", "value": "\n"},
     ]
 
-    inp = "# v$^&*(::abc123---)\n" + "string: 'hello_world'\n"
+    inp = "string: 'hell\\%r_world'\n"
     tokens = get_tokens(inp)
     assert tokens == [
+        {"type": "newline", "value": "\n"},
         {"type": "name", "value": "string"},
         {"type": "punc", "value": ":"},
-        {"type": "string", "value": "hello_world"},
+        {"type": "string", "value": "hell%r_world"},
         {"type": "newline", "value": "\n"},
     ]
 
+
+def test_string_newline():
     inp = "\n" + "string: 'hello_world'\n\n\n"
     tokens = get_tokens(inp)
     assert tokens == [
@@ -70,14 +73,11 @@ def test_hello_world_complex():
         {"type": "newline", "value": "\n"},
     ]
 
-    inp = "\n" + "string: 'hell\\%r_world'\n\n\n"
+    inp = "# v$^&*(::abc123---)\n" + "string: 'hello_world'\n"
     tokens = get_tokens(inp)
     assert tokens == [
-        {"type": "newline", "value": "\n"},
         {"type": "name", "value": "string"},
         {"type": "punc", "value": ":"},
-        {"type": "string", "value": "hell%r_world"},
-        {"type": "newline", "value": "\n"},
-        {"type": "newline", "value": "\n"},
+        {"type": "string", "value": "hello_world"},
         {"type": "newline", "value": "\n"},
     ]
