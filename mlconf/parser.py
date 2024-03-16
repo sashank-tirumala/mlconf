@@ -1,14 +1,6 @@
 import re
 
 
-class Parser:
-    def __init__(self, config: str):
-        self.config = config
-
-    def parse(self):
-        return None
-
-
 class InputStream:
     def __init__(self, input):
         self.input = input
@@ -34,10 +26,13 @@ class InputStream:
         self.pos
         return self.pos >= len(self.input)
 
+    def start_of_line(self):
+        return self.col == 0
+
     def croak(self, msg):
         self.line
         self.col
-        raise Exception(f"{msg} ({self.line}:{self.col})")
+        raise SyntaxError(f"{self.line}:{self.col} {msg}")
 
 
 class TokenStream:
@@ -46,6 +41,10 @@ class TokenStream:
         self.current = None
 
     def read_next(self):
+        if self.is_start_of_line():
+            indent_val = self.read_indent()
+            if indent_val > 0:
+                return {"type": "indent", "value": indent_val}
         self.read_while(self.is_whitespace)
         if self.input.eof():
             return None
@@ -53,15 +52,25 @@ class TokenStream:
         if ch == "#":
             self.skip_comment()
             return self.read_next()
-        if ch == '"':
+        elif ch == '"':
             return self.read_string()
-        if self.is_digit(ch):
+        elif self.is_digit(ch):
             return self.read_number()
-        if self.is_punc(ch):
+        elif self.is_punc(ch):
             return {"type": "punc", "value": self.input.next()}
-        if self.is_char(ch):
+        elif self.is_char(ch):
             return {"type": "name", "value": self.read_while(self.is_char)}
-        self.input.croak(f"Can't handle character: {ch}")
+        elif ch == "\n":
+            self.input.next()
+            return {"type": "newline"}
+        else:
+            self.input.croak(f"Can't handle character: {ch}")
+
+    def read_indent(self):
+        return len(self.read_while(self.is_whitespace))
+
+    def is_start_of_line(self):
+        return self.input.start_of_line()
 
     def read_while(self, predicate):
         str = ""
@@ -70,7 +79,7 @@ class TokenStream:
         return str
 
     def is_whitespace(self, ch):
-        return re.match(r"\s", ch)
+        return re.match(r"[ \t\f\r]", ch)
 
     def skip_comment(self):
         self.read_while(lambda ch: ch != "\n")
@@ -109,16 +118,70 @@ class TokenStream:
     def is_char(self, ch):
         return re.match(r"[a-zA-Z_]", ch)
 
+    def croak(self, msg):
+        self.input.croak(msg)
+
+
+class AST:
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
+
+    def __str__(self):
+        return f"{self.name}: {self.value}"
+
+    def __repr__(self):
+        return f"{self.name}: {self.value}"
+
+    def __eq__(self, other):
+        return self.name == other.name and self.value == other.value
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+class Parser:
+    def __init__(self, input):
+        self.input = input
+
+    def parse(self):
+        ast = {}
+        while True:
+            token = self.input.read_next()
+            if token is None:
+                break
+            if token["type"] == "name":
+                name = token["value"]
+                token = self.input.read_next()
+                if token is None:
+                    self.input.croak("Unexpected end of input")
+                if token["type"] != "punc" or token["value"] != ":":
+                    self.input.croak("Expected :")
+                token = self.input.read_next()
+                if token["type"] == "string" or token["type"] == "number":
+                    value = token["value"]
+                    ast[name] = value
+                elif token["type"] == "indent" or token["type"] == "newline":
+                    value = self.parse()
+                    ast[name] = value
+                else:
+                    self.input.croak("Unexpected token")
+        return AST("root", ast)
+
 
 def parse(config: str):
     return Parser(config).parse()
 
 
 if __name__ == "__main__":
-    config = """
-    string: "hello_world\n \\" boy \\" hello"
-    val : -1.2
+    config = """string: "hello_world"
+    game:
+            value: 1
     """
-    inp = TokenStream(InputStream(config))
-    while not inp.input.eof():
-        print(inp.read_next())
+    inp = parse(TokenStream(InputStream(config)))
+    print(inp)
+    # while True:
+    #     token = inp.read_next()
+    #     if token is None:
+    #         break
+    #     print(token)
