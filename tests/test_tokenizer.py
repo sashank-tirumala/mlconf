@@ -113,51 +113,51 @@ def test_num_simple():
     ]
 
 
-# def test_num_decimal():
-#     inp = "num: 123.456\n"
-#     tokens = get_tokens(inp)
-#     assert tokens == [
-#         {"type": "name", "value": "num"},
-#         {"type": "punc", "value": ":"},
-#         {"type": "number", "value": 123.456},
-#         {"type": "newline", "value": "\n"},
-#     ]
+def test_num_decimal():
+    inp = "num: 123.456\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "num"},
+        {"type": "punc", "value": ":"},
+        {"type": "number", "value": 123.456},
+        {"type": "newline", "value": "\n"},
+    ]
 
-#     inp = "num : -123.456\n"
-#     tokens = get_tokens(inp)
-#     assert tokens == [
-#         {"type": "name", "value": "num"},
-#         {"type": "punc", "value": ":"},
-#         {"type": "number", "value": -123.456},
-#         {"type": "newline", "value": "\n"},
-#     ]
+    inp = "num : -123.456\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "num"},
+        {"type": "punc", "value": ":"},
+        {"type": "number", "value": -123.456},
+        {"type": "newline", "value": "\n"},
+    ]
 
-#     inp = "num : 123.456e-2\n"
-#     tokens = get_tokens(inp)
-#     assert tokens == [
-#         {"type": "name", "value": "num"},
-#         {"type": "punc", "value": ":"},
-#         {"type": "number", "value": 1.23456},
-#         {"type": "newline", "value": "\n"},
-#     ]
+    inp = "num : 123.456e-2\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "num"},
+        {"type": "punc", "value": ":"},
+        {"type": "number", "value": 1.23456},
+        {"type": "newline", "value": "\n"},
+    ]
 
-#     inp = "num : 123.456e+2\n"
-#     tokens = get_tokens(inp)
-#     assert tokens == [
-#         {"type": "name", "value": "num"},
-#         {"type": "punc", "value": ":"},
-#         {"type": "number", "value": 12345.6},
-#         {"type": "newline", "value": "\n"},
-#     ]
+    inp = "num : 123.456e+2\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "num"},
+        {"type": "punc", "value": ":"},
+        {"type": "number", "value": 12345.6},
+        {"type": "newline", "value": "\n"},
+    ]
 
-#     inp = "num : 123.456e2\n"
-#     tokens = get_tokens(inp)
-#     assert tokens == [
-#         {"type": "name", "value": "num"},
-#         {"type": "punc", "value": ":"},
-#         {"type": "number", "value": 12345.6},
-#         {"type": "newline", "value": "\n"},
-#     ]
+    inp = "num : 123.456E2\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "num"},
+        {"type": "punc", "value": ":"},
+        {"type": "number", "value": 12345.6},
+        {"type": "newline", "value": "\n"},
+    ]
 
 
 def test_num_sign():

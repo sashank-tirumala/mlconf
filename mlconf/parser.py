@@ -109,7 +109,7 @@ class TokenStream:
         return re.match(r"\d|\.|\-|\+", ch)
 
     def read_number(self):
-        str = self.read_while(lambda ch: self.is_digit(ch) or ch == "e")
+        str = self.read_while(lambda ch: self.is_digit(ch) or re.match(r"e|E", ch))
         try:
             val = float(str)
             return {"type": "number", "value": float(str)}
