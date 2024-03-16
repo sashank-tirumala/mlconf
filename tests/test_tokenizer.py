@@ -190,3 +190,22 @@ def test_num_sign():
     for inp in invalid_inps:
         with pytest.raises(SyntaxError):
             get_tokens(inp)
+
+
+def test_multi_line_string_num():
+    inp = "string: 'hello_world'\n" + "num: 123\n" + "string: 'hello_world'\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "string"},
+        {"type": "punc", "value": ":"},
+        {"type": "string", "value": "hello_world"},
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "num"},
+        {"type": "punc", "value": ":"},
+        {"type": "number", "value": 123.0},
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "string"},
+        {"type": "punc", "value": ":"},
+        {"type": "string", "value": "hello_world"},
+        {"type": "newline", "value": "\n"},
+    ]
