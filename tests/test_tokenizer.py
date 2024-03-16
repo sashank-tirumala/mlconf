@@ -257,3 +257,12 @@ def test_complex_name():
     for inp in invalid_inps:
         with pytest.raises(SyntaxError):
             get_tokens(inp)
+
+    # TODO : activate harder tests
+    # invalid_inps = [
+    #     "name: value-123\n",
+    #     "name: value.887\n",
+    # ]
+    # for inp in invalid_inps:
+    #     with pytest.raises(SyntaxError):
+    #         get_tokens(inp)
