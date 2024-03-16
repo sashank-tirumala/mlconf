@@ -114,7 +114,7 @@ class TokenStream:
             val = float(str)
             return {"type": "number", "value": float(str)}
         except ValueError:
-            self.input.croak(f"Invalid number: {str}")
+            self.croak(f"Invalid number: {str}")
 
     def is_punc(self, ch):
         return re.match(r"[:]", ch)
@@ -150,7 +150,7 @@ def parse_token_stream(input):
     while True:
         token = input.read_next()
         if not check_transition(token, tokens):
-            raise SyntaxError("Invalid transition")
+            token.croak("Invalid token")
         tokens.append(token)
         if token is None:
             break
