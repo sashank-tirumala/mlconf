@@ -2,7 +2,8 @@ import re
 
 
 class InputStream:
-    def __init__(self, input):
+    def __init__(self, input: str):
+        assert type(input) == str, "Input must be a string"
         self.input = input
         self.pos = 0
         self.line = 1
