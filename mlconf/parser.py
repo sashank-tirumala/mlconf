@@ -40,15 +40,19 @@ class TokenStream:
         self.current = None
 
     def read_next(self):
-        # if self.is_start_of_line():
-        #     indent = self.read_indent()
-        #     return indent if indent is not None else self.read_next()
+        if self.is_start_of_line():
+            indent = self.read_indent()
+            print(self.input.peek())
+            if indent is not None:
+                return indent
         self.read_while(self.is_whitespace)
         if self.input.eof():
             if self.indents[-1] > 0:
-                self.indents.pop()
-                return {"type": "dedent", "value": self.indents[-1]}
-            return None
+                while self.indents[-1] > 0:
+                    self.indents.pop()
+                return {"type": "dedent", "value": 0}
+            else:
+                return None
         ch = self.input.peek()
         if ch == "#":
             self.skip_comment()
@@ -67,19 +71,19 @@ class TokenStream:
         else:
             self.input.croak(f"Can't handle character: {ch}")
 
-    # def read_indent(self):
-    #     indent_count = len(self.read_while(self.is_whitespace))
-    #     if indent_count > self.indents[-1]:
-    #         self.indents.append(indent_count)
-    #         return {"type": "indent", "value": indent_count}
-    #     elif indent_count < self.indents[-1]:
-    #         if indent_count not in self.indents:
-    #             self.input.croak(f"Invalid indentation: {indent_count}")
-    #         while indent_val < self.indents[-1]:
-    #             indent_val = self.indents.pop()
-    #         return {"type": "dedent", "value": indent_val}
-    #     else:
-    #         return None
+    def read_indent(self):
+        indent_count = len(self.read_while(self.is_whitespace))
+        if indent_count == self.indents[-1]:
+            return None
+        if indent_count > self.indents[-1]:
+            self.indents.append(indent_count)
+            return {"type": "indent", "value": indent_count}
+        if indent_count < self.indents[-1]:
+            while indent_count < self.indents[-1]:
+                self.indents.pop()
+            if indent_count != self.indents[-1]:
+                self.input.croak(f"Invalid indentation: {indent_count}")
+            return {"type": "dedent", "value": indent_count}
 
     def is_start_of_line(self):
         return self.input.start_of_line()
@@ -236,7 +240,7 @@ def get_tokens(input):
 
 
 if __name__ == "__main__":
-    config = "game: 10\nvalue : a"
+    config = "game: 10\n  value : a"
     # inp = TokenStream(InputStream(config))
-    # print(get_tokens(config))
-    print(parse(config))
+    print(get_tokens(config))
+    # print(parse(config))
