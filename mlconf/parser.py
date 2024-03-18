@@ -111,7 +111,6 @@ class TokenStream:
     def read_number(self):
         str = self.read_while(lambda ch: self.is_digit(ch) or re.match(r"e|E", ch))
         try:
-            val = float(str)
             return {"type": "number", "value": float(str)}
         except ValueError:
             self.croak(f"Invalid number: {str}")
@@ -223,10 +222,4 @@ if __name__ == "__main__":
                 value: 3
     """
     inp = TokenStream(InputStream(config))
-    inp_parse = parse_token_stream(TokenStream(InputStream(config)))
-    print(inp_parse)
-    while True:
-        token = inp.read_next()
-        if token is None:
-            break
-        print(token)
+    inp_parse = parse(TokenStream(InputStream(config)))
