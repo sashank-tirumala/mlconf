@@ -42,12 +42,12 @@ def test_string_complex():
         {"type": "newline", "value": "\n"},
     ]
 
-    inp = 'str123ing :     "hel3qrtlo_wor$$*rld" \n'
+    inp = 'str123ing :     "hel3qrtlo_wor:$$*rld" \n'
     tokens = get_tokens(inp)
     assert tokens == [
         {"type": "name", "value": "str123ing"},
         {"type": "punc", "value": ":"},
-        {"type": "string", "value": "hel3qrtlo_wor$$*rld"},
+        {"type": "string", "value": "hel3qrtlo_wor:$$*rld"},
         {"type": "newline", "value": "\n"},
     ]
 

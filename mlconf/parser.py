@@ -144,28 +144,59 @@ class AST:
         return not self.__eq__(other)
 
 
-def parse_token_stream(input):
+def parse_config(token_stream):
+    """
+    This parses an entire configuration file
+    """
     ast = {}
-    tokens = []
     while True:
-        token = input.read_next()
-        if not check_transition(token, tokens):
-            token.croak("Invalid token")
-        tokens.append(token)
+        token = token_stream.read_next()
         if token is None:
             break
+        elif token["type"] == "name":
+            name = token["value"]
+            token = token_stream.read_next()
+            if token["type"] == "punc":
+                if token["value"] == ":":
+                    value = parse_value(token_stream)
+                    ast[name] = value
+                else:
+                    token_stream.croak(f"Expected a colon, got: {token.value}")
+        elif token["type"] == "newline":
+            continue
+        elif token["type"] == "indent":
+            # TODO: Implement indentation check
+            continue
+        else:
+            token_stream.croak(f"Unexpected token, probably a number or a string with no name: {token.value}")
+    return ast
 
-    return AST("root", ast)
 
-
-def check_transition(token, tokens):
-    if len(tokens) == 0:
-        return True
-    last_token = tokens[-1]
+def parse_value(token_stream):
+    """
+    This parses an expression
+    """
+    while True:
+        token = token_stream.read_next()
+        if token is None:
+            token_stream.croak("Unexpected end of file")
+        elif token["type"] == "name":
+            return token["value"]
+        elif token["type"] == "string":
+            return token["value"]
+        elif token["type"] == "number":
+            return token["value"]
+        elif token["type"] == "newline":
+            continue
+        elif token["type"] == "indent":
+            # TODO: Implement indentation check
+            continue
+        else:
+            token_stream.croak(f"Unexpected token: {token.value}")
 
 
 def parse(input):
-    return parse_token_stream(TokenStream(InputStream(input)))
+    return parse_config(TokenStream(InputStream(input)))
 
 
 def get_tokens(input):
