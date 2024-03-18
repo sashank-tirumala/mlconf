@@ -28,11 +28,11 @@ def basic_config():
         + "float6: 1.0e+2\n"
         + "float7: 1e+2\n"
         + "float8: 1e2\n"
-        # + "bool1: true\n"
-        # + "bool2: false\n"
-        # + "bool3: True\n"
-        # + "bool4: False\n"
-        # + "random: null\n"
+        + "bool1: true\n"
+        + "bool2: false\n"
+        + "bool3: True\n"
+        + "bool4: False\n"
+        + "random: null\n"
     )
 
 
@@ -50,50 +50,41 @@ def assert_basic_config(parse):
     assert parse["float6"] == 100.0
     assert parse["float7"] == 100.0
     assert parse["float8"] == 100.0
-    # assert parse["bool1"] == True
-    # assert parse["bool2"] == False
-    # assert parse["bool3"] == True
-    # assert parse["bool4"] == False
-    # assert parse["random"] == None
+    assert parse["bool1"] == True
+    assert parse["bool2"] == False
+    assert parse["bool3"] == True
+    assert parse["bool4"] == False
+    assert parse["random"] == None
 
 
 def test_basic_parse(basic_config):
     parse = mlconf.parse(basic_config)
     assert_basic_config(parse)
 
-    # def test_basic_parse_with_space_and_comment(basic_config):
-    #     new_basic_config1 = ""
-    #     counter = 0
-    #     for line in basic_config.split("\n"):
-    #         if counter == 0 or counter == 6 or counter == 12:
-    #             new_basic_config1 += "\n"
-    #         if counter == 0 or counter == 5 or counter == 10:
-    #             new_basic_config1 += "# comment\n"
-    #         new_basic_config1 += str(line) + "\n"
-    #         counter += 1
-    #     counter = 0
-    #     new_basic_config2 = ""
-    #     for line in basic_config.split("\n"):
-    #         if counter == 0 or counter == 3 or counter == 9:
-    #             new_basic_config2 += " # comment\n"
-    #         if ":" in line:
-    #             split_colon = line.split(":")
-    #             new_basic_config2 += split_colon[0] + " : " + split_colon[1] + "\n"
-    #         counter += 1
-    #     new_basic_config3 = ""
-    #     counter = 0
-    #     for line in basic_config.split("\n"):
-    #         if counter == 0 or counter == 5 or counter == 7:
-    #             new_basic_config3 += " #$$$$\n"
-    #         if ":" in line:
-    #             split_colon = line.split(":")
-    #             new_basic_config3 += split_colon[0] + ": " + split_colon[1] + "\n"
-    #         counter += 1
-    #     import pdb
 
-    # pdb.set_trace()
-    # assert_basic_config(mlconf.parse(new_basic_config1))
-    # assert_basic_config(mlconf.parse(new_basic_config2))
+def test_basic_parse_with_space_and_comment(basic_config):
+    new_basic_config1 = ""
+    counter = 0
+    for line in basic_config.split("\n"):
+        if counter == 0 or counter == 6 or counter == 12:
+            new_basic_config1 += "\n"
+        if counter == 0 or counter == 5 or counter == 10:
+            new_basic_config1 += "# comment\n"
+        new_basic_config1 += str(line) + "\n"
+        counter += 1
+    counter = 0
+    new_basic_config2 = ""
+    for line in basic_config.split("\n"):
+        if counter == 0 or counter == 3 or counter == 9:
+            new_basic_config2 += "   # comment\n"
+        new_basic_config2 += str(line) + "\n"
+        counter += 1
+    new_basic_config2 + "  "
+    # print(new_basic_config2)
+    print(new_basic_config2)
+    print(mlconf.parser.get_tokens(new_basic_config2))
+    assert_basic_config(mlconf.parse(new_basic_config1))
+    assert_basic_config(mlconf.parse(new_basic_config2))
 
 
 def test_version():

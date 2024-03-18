@@ -79,6 +79,8 @@ class TokenStream:
         if indent_count == self.indents[-1]:
             return None
         if indent_count > self.indents[-1]:
+            if self.input.peek() == "\n" or self.input.eof() or self.input.peek() == "#":
+                return None
             self.indents.append(indent_count)
             return {"type": "indent", "value": indent_count}
         if indent_count < self.indents[-1]:
@@ -220,11 +222,15 @@ def parse_value(token_stream):
             return token["value"]
         elif token["type"] == "newline":
             continue
-        elif token["type"] == "indent":
+        elif token["type"] == "indent" or token["type"] == "dedent":
             # TODO: Implement indentation check
             continue
+        elif token["type"] == "bool":
+            return token["value"]
+        elif token["type"] == "null":
+            return token["value"]
         else:
-            token_stream.croak(f"Unexpected token: {token.value}")
+            token_stream.croak(f"Unexpected token: {token['value']}")
 
 
 def parse(input):
