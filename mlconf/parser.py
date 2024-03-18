@@ -38,11 +38,13 @@ class TokenStream:
         self.input = input
         self.indents = [0]
         self.current = None
+        self.is_last_token = False
 
     def read_next(self):
+        if self.is_last_token:
+            return None
         if self.is_start_of_line():
             indent = self.read_indent()
-            print(self.input.peek())
             if indent is not None:
                 return indent
         self.read_while(self.is_whitespace)
@@ -50,6 +52,7 @@ class TokenStream:
             if self.indents[-1] > 0:
                 while self.indents[-1] > 0:
                     self.indents.pop()
+                self.is_last_token = True
                 return {"type": "dedent", "value": 0}
             else:
                 return None

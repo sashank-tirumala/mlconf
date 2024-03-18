@@ -302,49 +302,90 @@ def test_complex_name():
     #         get_tokens(inp)
 
 
-# def test_indentations():
-#     inp = "name: value\n" + "  name: value\n" + "    name: value\n"
-#     tokens = get_tokens(inp)
-#     assert tokens == [
-#         {"type": "name", "value": "name"},
-#         {"type": "punc", "value": ":"},
-#         {"type": "name", "value": "value"},
-#         {"type": "newline", "value": "\n"},
-#         {"type": "indent", "value": 2},
-#         {"type": "name", "value": "name"},
-#         {"type": "punc", "value": ":"},
-#         {"type": "name", "value": "value"},
-#         {"type": "newline", "value": "\n"},
-#         {"type": "indent", "value": 4},
-#         {"type": "name", "value": "name"},
-#         {"type": "punc", "value": ":"},
-#         {"type": "name", "value": "value"},
-#         {"type": "newline", "value": "\n"},
-#     ]
+def test_indentation_simple1():
+    inp = "name: value\n" + "  name: value\n" + "    name: value\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+        {"type": "indent", "value": 2},
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+        {"type": "indent", "value": 4},
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+        {"type": "dedent", "value": 0},
+    ]
 
-#     inp = "name: value\n" + "  name: value\n" + "    name: value\n" + "  name: value\n"
-#     tokens = get_tokens(inp)
-#     assert tokens == [
-#         {"type": "name", "value": "name"},
-#         {"type": "punc", "value": ":"},
-#         {"type": "name", "value": "value"},
-#         {"type": "newline", "value": "\n"},
-#         {"type": "indent", "value": 2},
-#         {"type": "name", "value": "name"},
-#         {"type": "punc", "value": ":"},
-#         {"type": "name", "value": "value"},
-#         {"type": "newline", "value": "\n"},
-#         {"type": "indent", "value": 4},
-#         {"type": "name", "value": "name"},
-#         {"type": "punc", "value": ":"},
-#         {"type": "name", "value": "value"},
-#         {"type": "newline", "value": "\n"},
-#         {"type": "indent", "value": 2},
-#         {"type": "name", "value": "name"},
-#         {"type": "punc", "value": ":"},
-#         {"type": "name", "value": "value"},
-#         {"type": "newline", "value": "\n"},
-#     ]
+
+def test_indentation_simple2():
+    inp = "name: value\n" + "  name: value\n" + "    name: value\n" + "  name: value\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+        {"type": "indent", "value": 2},
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+        {"type": "indent", "value": 4},
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+        {"type": "dedent", "value": 2},
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+        {"type": "dedent", "value": 0},
+    ]
+
+
+def test_indentation_simple3():
+    inp = "name: value\n" + "  name: value\n" + "name: value\n" + " name: value\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+        {"type": "indent", "value": 2},
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+        {"type": "dedent", "value": 0},
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+        {"type": "indent", "value": 1},
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "value"},
+        {"type": "newline", "value": "\n"},
+        {"type": "dedent", "value": 0},
+    ]
+
+
+def test_indentation_simple4():
+    invalid_inps = [
+        "name: value\n" + "  name: value\n" + "    name: value\n" + " name: value\n" + "name: value\n",
+        "name: value\n" + "  name: value\n" + "    name: value\n" + "   name: value\n" + "  name: value\n",
+    ]
+    for inp in invalid_inps:
+        with pytest.raises(SyntaxError):
+            get_tokens(inp)
 
 
 def test_null():
