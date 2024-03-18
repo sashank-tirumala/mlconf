@@ -126,11 +126,11 @@ class TokenStream:
 
     def read_keyword(self):
         str = self.read_while(lambda ch: self.is_char(ch))
-        if str == "true":
+        if str == "true" or str == "True":
             return {"type": "bool", "value": True}
-        elif str == "false":
+        elif str == "false" or str == "False":
             return {"type": "bool", "value": False}
-        elif str == "null":
+        elif str == "null" or str == "None":
             return {"type": "null", "value": None}
         else:
             return {"type": "name", "value": str}

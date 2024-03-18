@@ -357,20 +357,37 @@ def test_null():
         {"type": "newline", "value": "\n"},
     ]
 
+    inp = "name: None\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "null", "value": None},
+        {"type": "newline", "value": "\n"},
+    ]
+
 
 def test_bool():
-    inp = "name: true\n"
+    inp = "name: true\n" + "name: false\n"
     tokens = get_tokens(inp)
     assert tokens == [
         {"type": "name", "value": "name"},
         {"type": "punc", "value": ":"},
         {"type": "bool", "value": True},
         {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "bool", "value": False},
+        {"type": "newline", "value": "\n"},
     ]
 
-    inp = "name: false\n"
+    inp = "name: True\n" + "name: False\n"
     tokens = get_tokens(inp)
     assert tokens == [
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "bool", "value": True},
+        {"type": "newline", "value": "\n"},
         {"type": "name", "value": "name"},
         {"type": "punc", "value": ":"},
         {"type": "bool", "value": False},
