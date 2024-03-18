@@ -19,34 +19,33 @@ class InputStream:
         return ch
 
     def peek(self):
-        self.pos
         return self.input[self.pos]
 
     def eof(self):
-        self.pos
         return self.pos >= len(self.input)
 
     def start_of_line(self):
         return self.col == 0
 
     def croak(self, msg):
-        self.line
-        self.col
         raise SyntaxError(f"{self.line}:{self.col} {msg}")
 
 
 class TokenStream:
     def __init__(self, input):
         self.input = input
+        self.indents = [0]
         self.current = None
 
     def read_next(self):
-        if self.is_start_of_line():
-            indent_val = self.read_indent()
-            if indent_val > 0:
-                return {"type": "indent", "value": indent_val}
+        # if self.is_start_of_line():
+        #     indent = self.read_indent()
+        #     return indent if indent is not None else self.read_next()
         self.read_while(self.is_whitespace)
         if self.input.eof():
+            if self.indents[-1] > 0:
+                self.indents.pop()
+                return {"type": "dedent", "value": self.indents[-1]}
             return None
         ch = self.input.peek()
         if ch == "#":
@@ -66,8 +65,19 @@ class TokenStream:
         else:
             self.input.croak(f"Can't handle character: {ch}")
 
-    def read_indent(self):
-        return len(self.read_while(self.is_whitespace))
+    # def read_indent(self):
+    #     indent_count = len(self.read_while(self.is_whitespace))
+    #     if indent_count > self.indents[-1]:
+    #         self.indents.append(indent_count)
+    #         return {"type": "indent", "value": indent_count}
+    #     elif indent_count < self.indents[-1]:
+    #         if indent_count not in self.indents:
+    #             self.input.croak(f"Invalid indentation: {indent_count}")
+    #         while indent_val < self.indents[-1]:
+    #             indent_val = self.indents.pop()
+    #         return {"type": "dedent", "value": indent_val}
+    #     else:
+    #         return None
 
     def is_start_of_line(self):
         return self.input.start_of_line()
@@ -174,14 +184,14 @@ def parse_config(token_stream):
                     value = parse_value(token_stream)
                     ast[name] = value
                 else:
-                    token_stream.croak(f"Expected a colon, got: {token.value}")
+                    token_stream.croak(f"Expected a colon, got: {token['value']}")
         elif token["type"] == "newline":
             continue
         elif token["type"] == "indent":
             # TODO: Implement indentation check
             continue
         else:
-            token_stream.croak(f"Unexpected token, probably a number or a string with no name: {token.value}")
+            token_stream.croak(f"Unexpected token, probably a number or a string with no name: {token['value']}")
     return ast
 
 
@@ -224,16 +234,7 @@ def get_tokens(input):
 
 
 if __name__ == "__main__":
-    config = """string: "hello_world"
-    game:
-        value : 1
-        box: 1
-
-
-
-            value: 2
-            item:
-                value: 3
-    """
-    inp = TokenStream(InputStream(config))
-    inp_parse = parse(TokenStream(InputStream(config)))
+    config = "game: 10\nvalue : a"
+    # inp = TokenStream(InputStream(config))
+    # print(get_tokens(config))
+    print(parse(config))
