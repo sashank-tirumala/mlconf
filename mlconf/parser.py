@@ -33,7 +33,8 @@ class InputStream:
 
 
 class TokenStream:
-    def __init__(self, input):
+    def __init__(self, input: InputStream):
+        assert type(input) == InputStream, "Input must be an InputStream"
         self.input = input
         self.indents = [0]
         self.current = None
