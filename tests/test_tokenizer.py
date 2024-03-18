@@ -284,23 +284,6 @@ def test_complex_name():
         {"type": "newline", "value": "\n"},
     ]
 
-    invalid_inps = [
-        "name: value-uef\n",
-        "name: value+uef\n",
-    ]
-    for inp in invalid_inps:
-        with pytest.raises(SyntaxError):
-            get_tokens(inp)
-
-    # TODO : activate harder tests
-    # invalid_inps = [
-    #     "name: value-123\n",
-    #     "name: value.887\n",
-    # ]
-    # for inp in invalid_inps:
-    #     with pytest.raises(SyntaxError):
-    #         get_tokens(inp)
-
 
 def test_indentation_simple1():
     inp = "name: value\n" + "  name: value\n" + "    name: value\n"

@@ -194,6 +194,8 @@ def parse_config(token_stream):
                 if token["value"] == ":":
                     value = parse_value(token_stream)
                     ast[name] = value
+                    if token_stream.read_next()["type"] != "newline":
+                        token_stream.croak("Expected a newline")
                 else:
                     token_stream.croak(f"Expected a colon, got: {token['value']}")
         elif token["type"] == "newline":

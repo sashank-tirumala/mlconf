@@ -36,6 +36,17 @@ def basic_config():
     )
 
 
+invalid_names = [
+    "name: value uef\n",
+    "name: value+uef\n",
+    "name: value-123\n",
+    "name: value.887\n",
+    "name.886: value\n",
+    "name$tr: value\n",
+    "name tr: value\n",
+]
+
+
 def assert_basic_config(parse):
     assert parse["string"] == "test"
     assert parse["string2"] == "test"
@@ -85,6 +96,12 @@ def test_basic_parse_with_space_and_comment(basic_config):
     print(mlconf.parser.get_tokens(new_basic_config2))
     assert_basic_config(mlconf.parse(new_basic_config1))
     assert_basic_config(mlconf.parse(new_basic_config2))
+
+
+@pytest.mark.parametrize("invalid_name", invalid_names)
+def test_invalid_names(invalid_name):
+    with pytest.raises(SyntaxError):
+        mlconf.parse(invalid_name)
 
 
 def test_version():
