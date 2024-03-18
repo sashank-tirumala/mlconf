@@ -345,3 +345,34 @@ def test_indentaions():
         {"type": "name", "value": "value"},
         {"type": "newline", "value": "\n"},
     ]
+
+
+def test_null():
+    inp = "name: null\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "null", "value": None},
+        {"type": "newline", "value": "\n"},
+    ]
+
+
+def test_bool():
+    inp = "name: true\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "bool", "value": True},
+        {"type": "newline", "value": "\n"},
+    ]
+
+    inp = "name: false\n"
+    tokens = get_tokens(inp)
+    assert tokens == [
+        {"type": "name", "value": "name"},
+        {"type": "punc", "value": ":"},
+        {"type": "bool", "value": False},
+        {"type": "newline", "value": "\n"},
+    ]

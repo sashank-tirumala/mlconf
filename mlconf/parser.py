@@ -59,7 +59,7 @@ class TokenStream:
         elif self.is_punc(ch):
             return {"type": "punc", "value": self.input.next()}
         elif self.is_char(ch):
-            return {"type": "name", "value": self.read_while(self.is_char)}
+            return self.read_keyword()
         elif ch == "\n":
             self.input.next()
             return {"type": "newline", "value": "\n"}
@@ -120,6 +120,20 @@ class TokenStream:
 
     def is_char(self, ch):
         return re.match(r"[a-z|A-Z|_|0-9]", ch)
+
+    def is_null(self, ch):
+        return re.match(r"null", ch)
+
+    def read_keyword(self):
+        str = self.read_while(lambda ch: self.is_char(ch))
+        if str == "true":
+            return {"type": "bool", "value": True}
+        elif str == "false":
+            return {"type": "bool", "value": False}
+        elif str == "null":
+            return {"type": "null", "value": None}
+        else:
+            return {"type": "name", "value": str}
 
     def croak(self, msg):
         self.input.croak(msg)
