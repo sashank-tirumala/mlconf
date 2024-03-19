@@ -91,9 +91,6 @@ def test_basic_parse_with_space_and_comment(basic_config):
         new_basic_config2 += str(line) + "\n"
         counter += 1
     new_basic_config2 + "  "
-    # print(new_basic_config2)
-    print(new_basic_config2)
-    print(mlconf.parser.get_tokens(new_basic_config2))
     assert_basic_config(mlconf.parse(new_basic_config1))
     assert_basic_config(mlconf.parse(new_basic_config2))
 
