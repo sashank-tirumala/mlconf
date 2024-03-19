@@ -101,5 +101,32 @@ def test_invalid_names(invalid_name):
         mlconf.parse(invalid_name)
 
 
+def test_simple_indentation():
+    config = """
+    abc: def
+    ghi:
+      j_kl: mno
+      p1q: null
+      oio:
+        r2s: 3.14
+        why: true
+      maybe: false
+        hi: there
+    tef: -1.23e-1
+    rock: solid
+    """
+    parsed_config = mlconf.parse(config)
+    assert parsed_config["abc"] == "def"
+    assert parsed_config["ghi"]["j_kl"] == "mno"
+    assert parsed_config["ghi"]["p1q"] == None
+    assert parsed_config["ghi"]["oio"]["r2s"] == 3.14
+    assert parsed_config["ghi"]["oio"]["why"] == True
+    assert parsed_config["ghi"]["maybe"] == False
+    assert parsed_config["ghi"]["hi"] == "there"
+    assert parsed_config["tef"] == -0.123
+    assert parsed_config["rock"] == "solid"
+    assert len(parsed_config) == 4
+
+
 def test_version():
     assert __version__ == "0.1.0"
