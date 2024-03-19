@@ -49,10 +49,10 @@ class TokenStream:
                 return indent
         self.read_while(self.is_whitespace)
         if self.input.eof():
+            self.is_last_token = True
             if self.indents[-1] > 0:
                 while self.indents[-1] > 0:
                     self.indents.pop()
-                self.is_last_token = True
                 return {"type": "dedent", "value": 0}
             else:
                 return None
@@ -178,7 +178,7 @@ class AST:
         return not self.__eq__(other)
 
 
-def parse_config(token_stream):
+def parse_config(token_stream, indent_count=0):
     """
     This parses an entire configuration file
     """
@@ -192,19 +192,20 @@ def parse_config(token_stream):
             token = token_stream.read_next()
             if token["type"] == "punc":
                 if token["value"] == ":":
-                    value = parse_value(token_stream)
-                    ast[name] = value
-                    if token_stream.read_next()["type"] != "newline":
-                        token_stream.croak("Expected a newline")
+                    ast[name] = parse_value(token_stream)
                 else:
-                    token_stream.croak(f"Expected a colon, got: {token['value']}")
-        elif token["type"] == "newline":
+                    token_stream.croak(f"Expected a colon, got: {token}")
+        elif token["type"] == "newline" or token["type"] == "indent":
             continue
-        elif token["type"] == "indent":
-            # TODO: Implement indentation check
-            continue
+        elif token["type"] == "dedent":
+            print("hi", ast)
+            if token["value"] <= indent_count:
+                return ast
+            else:
+                token = token_stream.read_next()
+                ast[token["value"]] = parse_value(token_stream)
         else:
-            token_stream.croak(f"Unexpected token, probably a number or a string with no name: {token['value']}")
+            token_stream.croak(f"Unexpected token, probably a number or a string with no name: {token}")
     return ast
 
 
@@ -216,23 +217,37 @@ def parse_value(token_stream):
         token = token_stream.read_next()
         if token is None:
             token_stream.croak("Unexpected end of file")
-        elif token["type"] == "name":
-            return token["value"]
-        elif token["type"] == "string":
-            return token["value"]
-        elif token["type"] == "number":
-            return token["value"]
+        elif (
+            token["type"] == "name"
+            or token["type"] == "string"
+            or token["type"] == "number"
+            or token["type"] == "bool"
+            or token["type"] == "null"
+        ):
+            value = token["value"]
+            next_token = token_stream.read_next()
+            if next_token is None or next_token["type"] == "newline" or next_token == {"type": "dedent", "value": 0}:
+                return value
+            else:
+                token_stream.croak(f"Expected a newline, got: {next_token}")
+        elif token["type"] == "indent":
+            indent_count = token["value"]
+            return parse_config(token_stream, indent_count)
         elif token["type"] == "newline":
             continue
-        elif token["type"] == "indent" or token["type"] == "dedent":
-            # TODO: Implement indentation check
-            continue
-        elif token["type"] == "bool":
-            return token["value"]
-        elif token["type"] == "null":
-            return token["value"]
         else:
-            token_stream.croak(f"Unexpected token: {token['value']}")
+            token_stream.croak(f"Unexpected token: {token}")
+
+
+def parse_indent(token_stream, indent_count):
+    ast = {}
+    while True:
+        token = token_stream.read_next()
+        if token["type"] == "dedent":
+            if token["value"] < indent_count:
+                return ast
+        else:
+            ast[token["value"]] = parse_config(token_stream)
 
 
 def parse(input):
@@ -251,7 +266,10 @@ def get_tokens(input):
 
 
 if __name__ == "__main__":
-    config = "game: 10\n  value : a"
-    # inp = TokenStream(InputStream(config))
-    print(get_tokens(config))
-    # print(parse(config))
+    config = "string:test\n"
+    config += "string2: \n"
+    config += "  test:1\n"
+    config += "  string3: 'test:12'\n"
+    config += "number: 1.0"
+    # print(get_tokens(config))
+    print(parse(config))
