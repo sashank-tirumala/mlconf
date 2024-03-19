@@ -160,29 +160,42 @@ class TokenStream:
         self.input.croak(msg)
 
 
-class AST:
-    def __init__(self, name, value):
-        self.name = name
-        self.value = value
+class MLConfig:
+    def __init__(self, key=None, value=None):
+        if key is not None and value is not None:
+            setattr(self, key, value)
 
-    def __str__(self):
-        return f"{self.name}: {self.value}"
+    def __getitem__(self, key):
+        return getattr(self, key)
 
     def __repr__(self):
-        return f"{self.name}: {self.value}"
+        res_str = ""
+        for attr, value in self.__dict__.items():
+            res_str += f"{attr}: {value}\n"
+        return res_str
 
-    def __eq__(self, other):
-        return self.name == other.name and self.value == other.value
+    def __str__(self, indent=0):
+        indent_str = "  " * indent
+        res_str = ""
+        for attr, value in self.__dict__.items():
+            if isinstance(value, MLConfig):
+                res_str += indent_str + f"{attr}:\n" + value.__str__(indent + 1)
+            else:
+                res_str += indent_str + f"{attr}: {value}\n"
+        return res_str
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def __len__(self):
+        return len(self.__dict__)
 
 
 def parse_config(token_stream, indent_count=0):
     """
     This parses an entire configuration file
     """
-    ast = {}
+    mlconfig = MLConfig()
     while True:
         token = token_stream.read_next()
         if token is None:
@@ -192,21 +205,20 @@ def parse_config(token_stream, indent_count=0):
             token = token_stream.read_next()
             if token["type"] == "punc":
                 if token["value"] == ":":
-                    ast[name] = parse_value(token_stream)
+                    mlconfig[name] = parse_value(token_stream)
                 else:
                     token_stream.croak(f"Expected a colon, got: {token}")
         elif token["type"] == "newline" or token["type"] == "indent":
             continue
         elif token["type"] == "dedent":
-            print("hi", ast)
             if token["value"] <= indent_count:
-                return ast
+                return mlconfig
             else:
                 token = token_stream.read_next()
-                ast[token["value"]] = parse_value(token_stream)
+                mlconfig[token["value"]] = parse_value(token_stream)
         else:
             token_stream.croak(f"Unexpected token, probably a number or a string with no name: {token}")
-    return ast
+    return mlconfig
 
 
 def parse_value(token_stream):
@@ -217,13 +229,7 @@ def parse_value(token_stream):
         token = token_stream.read_next()
         if token is None:
             token_stream.croak("Unexpected end of file")
-        elif (
-            token["type"] == "name"
-            or token["type"] == "string"
-            or token["type"] == "number"
-            or token["type"] == "bool"
-            or token["type"] == "null"
-        ):
+        elif token["type"] in ["name", "string", "number", "bool", "null"]:
             value = token["value"]
             next_token = token_stream.read_next()
             if next_token is None or next_token["type"] == "newline" or next_token == {"type": "dedent", "value": 0}:
@@ -269,7 +275,8 @@ if __name__ == "__main__":
     config = "string:test\n"
     config += "string2: \n"
     config += "  test:1\n"
-    config += "  string3: 'test:12'\n"
+    config += "  string3:\n"
+    config += "    test:1\n"
     config += "number: 1.0"
     # print(get_tokens(config))
     print(parse(config))

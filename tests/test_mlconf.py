@@ -117,14 +117,32 @@ def test_simple_indentation():
     """
     parsed_config = mlconf.parse(config)
     assert parsed_config["abc"] == "def"
+    assert parsed_config.abc == "def"
+
     assert parsed_config["ghi"]["j_kl"] == "mno"
+    assert parsed_config.ghi.j_kl == "mno"
+
     assert parsed_config["ghi"]["p1q"] == None
+    assert parsed_config.ghi.p1q == None
+
     assert parsed_config["ghi"]["oio"]["r2s"] == 3.14
+    assert parsed_config.ghi.oio.r2s == 3.14
+
     assert parsed_config["ghi"]["oio"]["why"] == True
+    assert parsed_config.ghi.oio.why == True
+
     assert parsed_config["ghi"]["maybe"] == False
+    assert parsed_config.ghi.maybe == False
+
     assert parsed_config["ghi"]["hi"] == "there"
+    assert parsed_config.ghi.hi == "there"
+
     assert parsed_config["tef"] == -0.123
+    assert parsed_config.tef == -0.123
+
     assert parsed_config["rock"] == "solid"
+    assert parsed_config.rock == "solid"
+
     assert len(parsed_config) == 4
 
 
