@@ -72,6 +72,20 @@ def parse(input):
     return parse_config(TokenStream(InputStream(input)))
 
 
+def parse_cli_input(input):
+    try:
+        return float(input)
+    except ValueError:
+        if input == "true" or input == "True":
+            return True
+        elif input == "false" or input == "False":
+            return False
+        elif input == "null" or input == "None":
+            return None
+        else:
+            return input
+
+
 if __name__ == "__main__":
     config = "string:test\n"
     config += "string2: \n"
