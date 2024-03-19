@@ -2,15 +2,19 @@
 MLConf
 =======================
 
+.. role:: bash(code)
+   :language: bash
+
+
 A lightweight pure python configuration manager geared towards machine learning projects.
 
 Installation
 ------------
 
 1. First, make sure you have Python 3.6+ installed.
-2. Clone this repository: `git clone https://github.com/your-username/your-repo.git`
-3. Change into the project directory: `cd your-repo`
-4. Install the package: `pip install -e ./`
+2. Clone this repository: :bash:`git clone https://github.com/your-username/your-repo.git`
+3. Change into the project directory: :bash:`cd your-repo`
+4. Install the package: :bash:`pip install -e ./`
 
 Quickstart
 -----
