@@ -47,6 +47,8 @@ and run your code with the `--config` argument:
 You should see the following output:
 
 .. code-block:: yaml
+
+
     model:
     name: your_model
     params:
