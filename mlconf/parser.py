@@ -1,6 +1,6 @@
 from mlconf.input_stream import InputStream
 from mlconf.mlconfig import MLConfig
-from mlconf.token_stream import TokenStream
+from mlconf.tokenizer import TokenStream
 
 
 def parse_config(token_stream, indent_count=0):
@@ -70,17 +70,6 @@ def parse_indent(token_stream, indent_count):
 
 def parse(input):
     return parse_config(TokenStream(InputStream(input)))
-
-
-def get_tokens(input):
-    tokenstream = TokenStream(InputStream(input))
-    tokens = []
-    while True:
-        token = tokenstream.read_next()
-        if token is None:
-            break
-        tokens.append(token)
-    return tokens
 
 
 if __name__ == "__main__":
