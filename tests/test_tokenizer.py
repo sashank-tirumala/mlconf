@@ -1,7 +1,6 @@
 import pytest
 
-from mlconf.input_stream import InputStream
-from mlconf.parser import TokenStream, get_tokens
+from mlconf.tokenizer import get_tokens
 
 
 def test_string_simple():

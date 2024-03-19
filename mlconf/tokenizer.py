@@ -129,3 +129,14 @@ class TokenStream:
 
     def croak(self, msg):
         self.input.croak(msg)
+
+
+def get_tokens(input):
+    tokenstream = TokenStream(InputStream(input))
+    tokens = []
+    while True:
+        token = tokenstream.read_next()
+        if token is None:
+            break
+        tokens.append(token)
+    return tokens
