@@ -6,10 +6,14 @@ class MLConfig:
     def __getitem__(self, key):
         return getattr(self, key)
 
-    def __repr__(self):
+    def __repr__(self, indent=0):
+        indent_str = "  " * indent
         res_str = ""
         for attr, value in self.__dict__.items():
-            res_str += f"{attr}: {value}\n"
+            if isinstance(value, MLConfig):
+                res_str += indent_str + f"{attr}:\n" + value.__str__(indent + 1)
+            else:
+                res_str += indent_str + f"{attr}: {value}\n"
         return res_str
 
     def __str__(self, indent=0):

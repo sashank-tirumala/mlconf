@@ -33,9 +33,7 @@ def load_argparse(config_arg: str = "config"):
     if not getattr(args[0], config_arg).exists():
         raise FileNotFoundError(f"Config file --{getattr(args[0], config_arg)} not found")
     cfg = load(getattr(args[0], config_arg))
-    import pdb
-
-    pdb.set_trace()
+    print(cfg)
 
 
 if __name__ == "__main__":
