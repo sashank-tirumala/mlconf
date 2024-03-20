@@ -1,3 +1,6 @@
+import subprocess
+import sys
+
 import pytest
 
 import mlconf
@@ -29,18 +32,20 @@ def config_str():
     )
 
 
-def cfg_test(cfg):
-    assert cfg.a == 1
-    assert cfg.b16 == 2
-    assert cfg.c_0d == True
-    assert cfg.d == None
-    assert cfg.e.b16 == 300.0
-    assert cfg.e.c_0d == 400.0
-    assert cfg.e.d == False
-    assert cfg.e.e == None
-    assert cfg.e.f.f == 5
-    assert cfg.e.f.g == -0.006
-    assert cfg.f == 0.07
+def cfg_test(
+    cfg, a=1, b16=2, c_0d=True, d=None, e_b16=300.0, e_c_0d=400, e_d=False, e_e=None, e_f_f=5.0, e_f_g=-0.006, f=0.07
+):
+    assert cfg.a == a
+    assert cfg.b16 == b16
+    assert cfg.c_0d == c_0d
+    assert cfg.d == d
+    assert cfg.e.b16 == e_b16
+    assert cfg.e.c_0d == e_c_0d
+    assert cfg.e.d == e_d
+    assert cfg.e.e == e_e
+    assert cfg.e.f.f == e_f_f
+    assert cfg.e.f.g == e_f_g
+    assert cfg.f == f
 
 
 def test_load(config_file):
@@ -65,3 +70,27 @@ def test_dumps(config_str):
     cfg = mlconf.loads(config_str)
     cfg2 = mlconf.loads(mlconf.dumps(cfg))
     assert cfg == cfg2
+
+
+def test_load_argparse(monkeypatch, config_file):
+    test_args = ["program_name", f"--config", str(config_file)]
+    monkeypatch.setattr(sys, "argv", test_args)
+    cfg = mlconf.load_argparse()
+    cfg_test(cfg)
+
+    test_args = [
+        "program_name",
+        f"--config",
+        str(config_file),
+        "--a",
+        "null",
+        "--e.b16",
+        "4e6",
+        "--e.f.f",
+        "True",
+        "--f",
+        "3.14",
+    ]
+    monkeypatch.setattr(sys, "argv", test_args)
+    cfg = mlconf.load_argparse()
+    cfg_test(cfg, a=None, e_b16=4000000.0, e_f_f=True, f=3.14)

@@ -24,6 +24,7 @@ def dumps(config: MLConfig) -> str:
 
 
 def load_argparse(config_arg: str = "config"):
+    # TODO: add cli support for negative numbers
     parser = argparse.ArgumentParser()
     parser.add_argument(f"--{config_arg}", type=Path, default=Path("abc"), help="Path to the configuration file")
     args = parser.parse_known_args()
