@@ -57,17 +57,6 @@ def parse_value(token_stream):
             token_stream.croak(f"Unexpected token: {token}")
 
 
-def parse_indent(token_stream, indent_count):
-    ast = {}
-    while True:
-        token = token_stream.read_next()
-        if token["type"] == "dedent":
-            if token["value"] < indent_count:
-                return ast
-        else:
-            ast[token["value"]] = parse_config(token_stream)
-
-
 def parse(input):
     return parse_config(TokenStream(InputStream(input)))
 
