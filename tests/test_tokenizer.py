@@ -417,3 +417,80 @@ def test_bool():
         {"type": "bool", "value": False},
         {"type": "newline", "value": "\n"},
     ]
+
+
+def test_bug_config_repeat_nested():
+    """
+    This test is to check if the tokenizer can handle an input with repeated nested keys
+    """
+    cfg = (
+        "a: 1\n"
+        + "b: 2\n"
+        + "c: True\n"
+        + "d: None\n"
+        + "e:\n"
+        + "  b: 3e+2\n"
+        + "  c: +4e2\n"
+        + "  d: False\n"
+        + "  e: null\n"
+        + "  f:\n"
+        + "    a: 5\n"
+        + "    b: -6e-3\n"
+        + "f: 0.07\n"
+    )
+    tokens = get_tokens(cfg)
+    assert tokens == [
+        {"type": "name", "value": "a"},
+        {"type": "punc", "value": ":"},
+        {"type": "number", "value": 1.0},
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "b"},
+        {"type": "punc", "value": ":"},
+        {"type": "number", "value": 2.0},
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "c"},
+        {"type": "punc", "value": ":"},
+        {"type": "bool", "value": True},
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "d"},
+        {"type": "punc", "value": ":"},
+        {"type": "null", "value": None},
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "e"},
+        {"type": "punc", "value": ":"},
+        {"type": "newline", "value": "\n"},
+        {"type": "indent", "value": 2},
+        {"type": "name", "value": "b"},
+        {"type": "punc", "value": ":"},
+        {"type": "number", "value": 300.0},
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "c"},
+        {"type": "punc", "value": ":"},
+        {"type": "number", "value": 400.0},
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "d"},
+        {"type": "punc", "value": ":"},
+        {"type": "bool", "value": False},
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "e"},
+        {"type": "punc", "value": ":"},
+        {"type": "null", "value": None},
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "f"},
+        {"type": "punc", "value": ":"},
+        {"type": "newline", "value": "\n"},
+        {"type": "indent", "value": 4},
+        {"type": "name", "value": "a"},
+        {"type": "punc", "value": ":"},
+        {"type": "number", "value": 5.0},
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "b"},
+        {"type": "punc", "value": ":"},
+        {"type": "number", "value": -0.006},
+        {"type": "newline", "value": "\n"},
+        {"type": "dedent", "value": 0},
+        {"type": "name", "value": "f"},
+        {"type": "punc", "value": ":"},
+        {"type": "number", "value": 0.07},
+        {"type": "newline", "value": "\n"},
+    ]
