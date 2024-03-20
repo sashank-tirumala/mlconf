@@ -102,19 +102,19 @@ def test_invalid_names(invalid_name):
 
 
 def test_simple_indentation():
-    config = """
-    abc: def
-    ghi:
-      j_kl: mno
-      p1q: null
-      oio:
-        r2s: 3.14
-        why: true
-      maybe: false
-        hi: there
-    tef: -1.23e-1
-    rock: solid
-    """
+    config = (
+        "abc: def\n"
+        + "ghi:\n"
+        + "  j_kl: mno\n"
+        + "  p1q: null\n"
+        + "  oio:\n"
+        + "    r2s: 3.14\n"
+        + "    why: true\n"
+        + "  maybe: false\n"
+        + "  hi: there\n"
+        + "tef: -0.123\n"
+        + "rock: solid\n"
+    )
     parsed_config = mlconf.parse(config)
     assert parsed_config["abc"] == "def"
     assert parsed_config.abc == "def"
@@ -144,6 +144,40 @@ def test_simple_indentation():
     assert parsed_config.rock == "solid"
 
     assert len(parsed_config) == 4
+
+
+def test_bug_config_repeat_nested():
+    """
+    This test is to check if the parser can handle an input with repeated nested keys
+    """
+    cfg_str = (
+        "a: 1\n"
+        + "b: 2\n"
+        + "c: True\n"
+        + "d: None\n"
+        + "e:\n"
+        + "  b: 3e+2\n"
+        + "  c: +4e2\n"
+        + "  d: False\n"
+        + "  e: null\n"
+        + "  g:\n"
+        + "    a: 5\n"
+        + "    b: -6e-3\n"
+        + "g: 0.07\n"
+    )
+    cfg = mlconf.parse(cfg_str)
+    assert cfg.a == 1
+    assert cfg.b == 2
+    assert cfg.c == True
+    assert cfg.d == None
+    assert cfg.e.b == 300
+    assert cfg.e.c == 400
+    assert cfg.e.d == False
+    assert cfg.e.e == None
+    assert cfg.e.g.a == 5
+    assert cfg.e.g.b == -0.006
+    assert cfg.g == 0.07
+    assert len(cfg) == 6
 
 
 def test_version():

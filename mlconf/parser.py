@@ -23,11 +23,10 @@ def parse_config(token_stream, indent_count=0):
         elif token["type"] == "newline" or token["type"] == "indent":
             continue
         elif token["type"] == "dedent":
-            if token["value"] <= indent_count:
+            if token["value"] == indent_count:
                 return mlconfig
             else:
-                token = token_stream.read_next()
-                mlconfig[token["value"]] = parse_value(token_stream)
+                token_stream.croak(f"Expected an indent of {indent_count}, got: {token['value']}")
         else:
             token_stream.croak(f"Unexpected token, probably a number or a string with no name: {token}")
     return mlconfig
