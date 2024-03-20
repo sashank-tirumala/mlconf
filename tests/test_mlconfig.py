@@ -22,3 +22,4 @@ def test_mlconfig_str():
     )
     cfg_names = cfg.__cfgnamestr__()
     assert cfg_names == "a\nb\nc\nd\ne.f\ne.g\ne.h\ne.i\ne.j.k\ne.j.l\nf\n"
+    assert len(cfg) == 6
