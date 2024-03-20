@@ -1,6 +1,11 @@
 import re
+from enum import Enum, auto
 
 from mlconf.input_stream import InputStream
+
+
+class PARSER_STATES(Enum):
+    DEDENT = auto()
 
 
 class TokenStream:
@@ -10,8 +15,11 @@ class TokenStream:
         self.indents = [0]
         self.current = None
         self.is_last_token = False
+        self.dedents = []
 
     def read_next(self):
+        if self.dedents:
+            return self.dedents.pop(0)
         if self.is_last_token:
             return None
         if self.is_start_of_line():
@@ -22,9 +30,9 @@ class TokenStream:
         if self.input.eof():
             self.is_last_token = True
             if self.indents[-1] > 0:
-                while self.indents[-1] > 0:
-                    self.indents.pop()
-                return {"type": "dedent", "value": 0}
+                indent_count = 0
+                while indent_count < self.indents[-1]:
+                    return {"type": "dedent", "value": self.indents.pop()}
             else:
                 return None
         ch = self.input.peek()
@@ -56,10 +64,10 @@ class TokenStream:
             return {"type": "indent", "value": indent_count}
         if indent_count < self.indents[-1]:
             while indent_count < self.indents[-1]:
-                self.indents.pop()
+                self.dedents.append({"type": "dedent", "value": self.indents.pop()})
             if indent_count != self.indents[-1]:
                 self.input.croak(f"Invalid indentation: {indent_count}")
-            return {"type": "dedent", "value": indent_count}
+            return self.dedents.pop(0)
 
     def is_start_of_line(self):
         return self.input.start_of_line()

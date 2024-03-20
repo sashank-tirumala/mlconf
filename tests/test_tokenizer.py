@@ -303,7 +303,8 @@ def test_indentation_simple1():
         {"type": "punc", "value": ":"},
         {"type": "name", "value": "value"},
         {"type": "newline", "value": "\n"},
-        {"type": "dedent", "value": 0},
+        {"type": "dedent", "value": 4},
+        {"type": "dedent", "value": 2},
     ]
 
 
@@ -325,12 +326,12 @@ def test_indentation_simple2():
         {"type": "punc", "value": ":"},
         {"type": "name", "value": "value"},
         {"type": "newline", "value": "\n"},
-        {"type": "dedent", "value": 2},
+        {"type": "dedent", "value": 4},
         {"type": "name", "value": "name"},
         {"type": "punc", "value": ":"},
         {"type": "name", "value": "value"},
         {"type": "newline", "value": "\n"},
-        {"type": "dedent", "value": 0},
+        {"type": "dedent", "value": 2},
     ]
 
 
@@ -347,7 +348,7 @@ def test_indentation_simple3():
         {"type": "punc", "value": ":"},
         {"type": "name", "value": "value"},
         {"type": "newline", "value": "\n"},
-        {"type": "dedent", "value": 0},
+        {"type": "dedent", "value": 2},
         {"type": "name", "value": "name"},
         {"type": "punc", "value": ":"},
         {"type": "name", "value": "value"},
@@ -357,7 +358,7 @@ def test_indentation_simple3():
         {"type": "punc", "value": ":"},
         {"type": "name", "value": "value"},
         {"type": "newline", "value": "\n"},
-        {"type": "dedent", "value": 0},
+        {"type": "dedent", "value": 1},
     ]
 
 
@@ -488,7 +489,8 @@ def test_bug_config_repeat_nested():
         {"type": "punc", "value": ":"},
         {"type": "number", "value": -0.006},
         {"type": "newline", "value": "\n"},
-        {"type": "dedent", "value": 0},
+        {"type": "dedent", "value": 4},
+        {"type": "dedent", "value": 2},
         {"type": "name", "value": "f"},
         {"type": "punc", "value": ":"},
         {"type": "number", "value": 0.07},
