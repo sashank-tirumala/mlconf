@@ -56,3 +56,8 @@ class MLConfig:
         Return a list of argparse style names for the configuration files
         """
         return self.__cfgnamestr__().split("\n")
+
+    def __eq__(self, other):
+        if isinstance(other, MLConfig):
+            return self.__dict__ == other.__dict__
+        return False

@@ -16,7 +16,7 @@ def loads(string: str) -> MLConfig:
 
 def dump(config: MLConfig, file: str, write_mode: str = "w"):
     with open(file, write_mode) as f:
-        f.write(config)
+        f.write(str(config))
 
 
 def dumps(config: MLConfig) -> str:
