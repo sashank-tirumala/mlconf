@@ -4,5 +4,6 @@ mlconf/__pycache__
 tests/__pycache__
 .vscode/
 UNKNOWN.egg-info
-build/
+_build/
+docs/
 mlconf/test_config.yaml
