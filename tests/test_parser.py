@@ -41,8 +41,7 @@ invalid_names = [
     "name: value+uef\n",
     "name: value-123\n",
     "name: value.887\n",
-    "name.886: value\n",
-    "name$tr: value\n",
+    "name.-886: value\n",
     "name tr: value\n",
 ]
 
@@ -146,10 +145,11 @@ def test_simple_indentation():
     assert len(parsed_config) == 4
 
 
-def test_bug_config_repeat_nested():
+def test_bug_config_repeat_nested(monkeypatch):
     """
     This test is to check if the parser can handle an input with repeated nested keys
     """
+    monkeypatch.setenv("MLCONF_TEST", "test")
     cfg_str = (
         "a: 1\n"
         + "b: 2\n"
@@ -161,7 +161,7 @@ def test_bug_config_repeat_nested():
         + "  d: False\n"
         + "  e: null\n"
         + "  g:\n"
-        + "    a: 5\n"
+        + "    a: $MLCONF_TEST\n"
         + "    b: -6e-3\n"
         + "g: 0.07\n"
     )
@@ -174,7 +174,7 @@ def test_bug_config_repeat_nested():
     assert cfg.e.c == 400
     assert cfg.e.d == False
     assert cfg.e.e == None
-    assert cfg.e.g.a == 5
+    assert cfg.e.g.a == "test"
     assert cfg.e.g.b == -0.006
     assert cfg.g == 0.07
     assert len(cfg) == 6
