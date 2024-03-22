@@ -498,9 +498,8 @@ def test_bug_config_repeat_nested():
     ]
 
 
-def test_bash_string_replacement(monkeypatch):
-    monkeypatch.setenv("HOME", "/home/user")
-    config = "path: $HOME\n"
+def test_var_format():
+    config = "path: $HO1ME__25\n"
     config += "path2: ${{HOME}}\n"
     config += "path_$HI_3: ${HOME_HOMEY}/config/dev\n"
     tokens = get_tokens(config)
@@ -508,7 +507,7 @@ def test_bash_string_replacement(monkeypatch):
         {"type": "name", "value": "path"},
         {"type": "punc", "value": ":"},
         {"type": "punc", "value": "$"},
-        {"type": "name", "value": "HOME"},
+        {"type": "name", "value": "HO1ME__25"},
         {"type": "newline", "value": "\n"},
         {"type": "name", "value": "path2"},
         {"type": "punc", "value": ":"},
