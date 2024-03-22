@@ -19,13 +19,10 @@ def parse_config(token_stream, indent_count=0):
         if token is None:
             break
         elif token["type"] == "name":
-            name = evaluate_name(token["value"])
+            name = token["value"]
             token = token_stream.read_next()
-            if token["type"] == "punc":
-                if token["value"] == ":":
-                    mlconfig[name] = parse_value(token_stream)
-                else:
-                    token_stream.croak(f"Expected a colon, got: {token}")
+            skip_punc(token_stream, ":")
+            mlconfig[name] = parse_value(token_stream)
         elif token["type"] == "newline" or token["type"] == "indent":
             continue
         elif token["type"] == "dedent":
@@ -34,7 +31,7 @@ def parse_config(token_stream, indent_count=0):
             else:
                 token_stream.croak(f"Expected an indent of {indent_count}, got: {token['value']}")
         elif token["type"] == "punc" and token["value"] == "$":
-            parse_var(token_stream)
+            mlconfig[parse_var(token_stream)] = None
             pass
         else:
             token_stream.croak(f"Unexpected token, probably a number or a string with no name: {token}")
@@ -50,10 +47,7 @@ def parse_value(token_stream):
         if token is None:
             token_stream.croak("Unexpected end of file")
         elif token["type"] in ["name", "string", "number", "bool", "null"]:
-            if token["type"] in ["name", "string"]:
-                value = evaluate_name(token["value"])
-            else:
-                value = token["value"]
+            value = token["value"]
             next_token = token_stream.read_next()
             if next_token is None or next_token["type"] == "newline" or next_token == {"type": "dedent", "value": 0}:
                 return value
@@ -79,21 +73,21 @@ def parse_var(token_stream):
         val = os.getenv(token["value"], None)
         if val is None:
             token_stream.croak(f"Environment variable not found: {token['value']}")
-        skip_newline(token_stream)
+        skip_punc(token_stream, "\n")
         return val
     else:
         token_stream.croak(f"Invalid_variable: {token}")
 
 
-def skip_newline(token_stream):
+def skip_punc(token_stream, punc):
     """
     This skips a newline
     """
     token = token_stream.read_next()
-    if token["type"] == "newline":
+    if token["value"] == punc:
         return
     else:
-        token_stream.croak(f"Expected a newline, got: {token}")
+        token_stream.croak(f"Expected a {punc}, got: {token_stream.input.peek()}")
 
 
 def evaluate_name(string):
