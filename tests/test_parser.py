@@ -180,14 +180,24 @@ def test_bug_config_repeat_nested(monkeypatch):
     assert len(cfg) == 6
 
 
-# def test_var_substitution(monkeypatch):
-#     """
-#     This test is to check if the parser can handle variable substitution
-#     """
-#     monkeypatch.setenv("HOME_DIR", "/home/user")
-#     monkeypatch.setenv("USER_NAME", "user")
-
-#     cfg_str = "home: $HOME_DIR\n" + "$USER_NAME: $USER_NAME\n"
+def test_var_substitution(monkeypatch):
+    """
+    This test is to check if the parser can handle variable substitution
+    """
+    monkeypatch.setenv("HOME_DIR", "/home/user")
+    monkeypatch.setenv("USER_NAME", "user")
+    cfg_str = (
+        "home_dir: $HOME_DIR\n"
+        + "user_name: $USER_NAME\n"
+        + "nested:\n"
+        + "  home_dir: $HOME_DIR\n"
+        + "  $USER_NAME: sash\n"
+    )
+    cfg = mlconf.parse(cfg_str)
+    assert cfg.home_dir == "/home/user"
+    assert cfg.user_name == "user"
+    assert cfg.nested.home_dir == "/home/user"
+    assert cfg.nested.user == "sash"
 
 
 def test_version():
