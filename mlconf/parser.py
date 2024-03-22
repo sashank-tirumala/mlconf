@@ -151,25 +151,6 @@ def skip_value_end(token_stream):
         token_stream.croak(f"Expected a newline, got: {token}")
 
 
-def evaluate_name(string):
-    """
-    This evaluates a name
-    """
-    pattern = r"\$(?:(\w+))"  # This matches $name
-    string = substitute_os_var(string, pattern)
-    pattern = r"\$\{([a-zA-Z0-9_]+)\}(?!\})"  # This matches ${name} but not ${{name}}
-    string = substitute_os_var(string, pattern)
-    return string
-
-
-def substitute_os_var(string, pattern):
-    def replace_func(match):
-        var_name = match.group(1)
-        return os.getenv(var_name, match.group(0))
-
-    return re.sub(pattern, replace_func, string)
-
-
 def parse(input):
     return parse_config(TokenStream(InputStream(input)))
 
