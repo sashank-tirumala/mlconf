@@ -44,7 +44,6 @@ class MLConfig:
         """
         res_str = ""
         for attr, value in self.__dict__.items():
-            # print(attr)
             if isinstance(value, MLConfig):
                 res_str += value.__cfgnamestr__(f"{base_str}{attr}.")
             else:

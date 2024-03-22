@@ -117,10 +117,10 @@ class TokenStream:
             self.croak(f"Invalid number: {str}")
 
     def is_punc(self, ch):
-        return re.match(r"[:]", ch)
+        return ch in "{},:[]$"
 
     def is_char(self, ch):
-        return re.match(r"[a-z|A-Z|_|0-9|$|{|}]", ch)
+        return re.match(r"[a-z|A-Z|_|0-9|/]", ch)
 
     def is_null(self, ch):
         return re.match(r"null", ch)

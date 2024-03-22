@@ -33,6 +33,9 @@ def parse_config(token_stream, indent_count=0):
                 return mlconfig
             else:
                 token_stream.croak(f"Expected an indent of {indent_count}, got: {token['value']}")
+        elif token["type"] == "punc" and token["value"] == "$":
+            parse_var(token_stream)
+            pass
         else:
             token_stream.croak(f"Unexpected token, probably a number or a string with no name: {token}")
     return mlconfig
@@ -61,8 +64,36 @@ def parse_value(token_stream):
             return parse_config(token_stream, indent_count)
         elif token["type"] == "newline":
             continue
+        elif token["type"] == "punc" and token["value"] == "$":
+            return parse_var(token_stream)
         else:
             token_stream.croak(f"Unexpected token: {token}")
+
+
+def parse_var(token_stream):
+    """
+    Parses a variable
+    """
+    token = token_stream.read_next()
+    if token["type"] == "name":
+        val = os.getenv(token["value"], None)
+        if val is None:
+            token_stream.croak(f"Environment variable not found: {token['value']}")
+        skip_newline(token_stream)
+        return val
+    else:
+        token_stream.croak(f"Invalid_variable: {token}")
+
+
+def skip_newline(token_stream):
+    """
+    This skips a newline
+    """
+    token = token_stream.read_next()
+    if token["type"] == "newline":
+        return
+    else:
+        token_stream.croak(f"Expected a newline, got: {token}")
 
 
 def evaluate_name(string):
