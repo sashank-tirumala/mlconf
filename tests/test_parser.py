@@ -185,19 +185,27 @@ def test_var_substitution(monkeypatch):
     This test is to check if the parser can handle variable substitution
     """
     monkeypatch.setenv("HOME_DIR", "/home/user")
-    monkeypatch.setenv("USER_NAME", "user")
+    monkeypatch.setenv("USER_NAME", "sash")
     cfg_str = (
         "home_dir: $HOME_DIR\n"
         + "user_name: $USER_NAME\n"
         + "nested:\n"
         + "  home_dir: $HOME_DIR\n"
         + "  $USER_NAME: sash\n"
+        + "  $HOME_DIR: $USER_NAME\n"
+        + "  nested:\n"
+        + "    home_dir: ${HOME_DIR}/$USER_NAME\n"
+        + "    ${HOME_DIR}/$USER_NAME: True\n"
     )
     cfg = mlconf.parse(cfg_str)
+    print(cfg)
     assert cfg.home_dir == "/home/user"
-    assert cfg.user_name == "user"
+    assert cfg.user_name == "sash"
     assert cfg.nested.home_dir == "/home/user"
-    assert cfg.nested.user == "sash"
+    assert cfg.nested.sash == "sash"
+    assert cfg.nested["/home/user"] == "sash"
+    assert cfg.nested.nested.home_dir == "/home/user/sash"
+    assert cfg.nested.nested["/home/user/sash"] == True
 
 
 def test_version():

@@ -63,7 +63,7 @@ def parse_value(token_stream):
             token_stream.croak(f"Unexpected token: {token}")
 
 
-def parse_var(token_stream):
+def parse_var(token_stream, count=0):
     """
     This parses a variable
     """
@@ -72,6 +72,11 @@ def parse_var(token_stream):
         val = os.getenv(token["value"], None)
         if val is None:
             token_stream.croak(f"Environment variable not found: {token['value']}")
+        return val
+    elif token["type"] == "punc" and token["value"] == "{":
+        if count == 0:
+            val = parse_var(token_stream, count + 1)
+            skip_punc(token_stream, "}")
         return val
     else:
         token_stream.croak(f"Invalid_variable: {token}")

@@ -526,7 +526,10 @@ def test_var_format():
         {"type": "punc", "value": "{"},
         {"type": "name", "value": "HOME_HOMEY"},
         {"type": "punc", "value": "}"},
-        {"type": "name", "value": "/config/dev"},
+        {"type": "punc", "value": "/"},
+        {"type": "name", "value": "config"},
+        {"type": "punc", "value": "/"},
+        {"type": "name", "value": "dev"},
         {"type": "newline", "value": "\n"},
     ]
 
