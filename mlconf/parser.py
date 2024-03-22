@@ -1,6 +1,12 @@
+import os
+import re
+
 from mlconf.input_stream import InputStream
 from mlconf.mlconfig import MLConfig
 from mlconf.tokenizer import TokenStream
+
+BASH_VAR_PATTERN_WITH_BRACKETS = r"\$\{([a-zA-Z0-9_]+)\}(?!\})"  # This matches ${name} but not ${{name}}
+BASH_VAR_PATTERN_RAW = r"\$(?:(\w+))"
 
 
 def parse_config(token_stream, indent_count=0):
@@ -13,7 +19,7 @@ def parse_config(token_stream, indent_count=0):
         if token is None:
             break
         elif token["type"] == "name":
-            name = token["value"]
+            name = evaluate_name(token["value"])
             token = token_stream.read_next()
             if token["type"] == "punc":
                 if token["value"] == ":":
@@ -41,7 +47,10 @@ def parse_value(token_stream):
         if token is None:
             token_stream.croak("Unexpected end of file")
         elif token["type"] in ["name", "string", "number", "bool", "null"]:
-            value = token["value"]
+            if token["type"] in ["name", "string"]:
+                value = evaluate_name(token["value"])
+            else:
+                value = token["value"]
             next_token = token_stream.read_next()
             if next_token is None or next_token["type"] == "newline" or next_token == {"type": "dedent", "value": 0}:
                 return value
@@ -54,6 +63,25 @@ def parse_value(token_stream):
             continue
         else:
             token_stream.croak(f"Unexpected token: {token}")
+
+
+def evaluate_name(string):
+    """
+    This evaluates a name
+    """
+    pattern = r"\$(?:(\w+))"  # This matches $name
+    string = substitute_os_var(string, pattern)
+    pattern = r"\$\{([a-zA-Z0-9_]+)\}(?!\})"  # This matches ${name} but not ${{name}}
+    string = substitute_os_var(string, pattern)
+    return string
+
+
+def substitute_os_var(string, pattern):
+    def replace_func(match):
+        var_name = match.group(1)
+        return os.getenv(var_name, match.group(0))
+
+    return re.sub(pattern, replace_func, string)
 
 
 def parse(input):

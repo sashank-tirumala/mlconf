@@ -501,11 +501,16 @@ def test_bug_config_repeat_nested():
 def test_bash_string_replacement(monkeypatch):
     monkeypatch.setenv("HOME", "/home/user")
     config = "path: $HOME\n"
+    config += "path2: ${{HOME}}\n"
     tokens = get_tokens(config)
     assert tokens == [
         {"type": "name", "value": "path"},
         {"type": "punc", "value": ":"},
-        {"type": "name", "value": "/home/user"},
+        {"type": "name", "value": "$HOME"},
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "path2"},
+        {"type": "punc", "value": ":"},
+        {"type": "name", "value": "${{HOME}}"},
         {"type": "newline", "value": "\n"},
     ]
 
@@ -515,6 +520,6 @@ def test_bash_string_replacement(monkeypatch):
     assert tokens == [
         {"type": "name", "value": "path"},
         {"type": "punc", "value": ":"},
-        {"type": "string", "value": "abvdef/config/dev"},
+        {"type": "string", "value": "${HOME_HOMEY}/config/dev"},
         {"type": "newline", "value": "\n"},
     ]

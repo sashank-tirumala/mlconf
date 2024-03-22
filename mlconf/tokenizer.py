@@ -87,7 +87,7 @@ class TokenStream:
         self.input.next()
 
     def read_string(self, end='"'):
-        return {"type": "string", "value": self.replace_bash_variables(self.read_escaped(end))}
+        return {"type": "string", "value": self.read_escaped(end)}
 
     def read_escaped(self, end):
         escaped = False
@@ -120,7 +120,7 @@ class TokenStream:
         return re.match(r"[:]", ch)
 
     def is_char(self, ch):
-        return re.match(r"[a-z|A-Z|_|0-9|$]", ch)
+        return re.match(r"[a-z|A-Z|_|0-9|$|{|}]", ch)
 
     def is_null(self, ch):
         return re.match(r"null", ch)
@@ -134,23 +134,10 @@ class TokenStream:
         elif str == "null" or str == "None":
             return {"type": "null", "value": None}
         else:
-            return {"type": "name", "value": self.replace_bash_variables(str)}
+            return {"type": "name", "value": str}
 
     def croak(self, msg):
         self.input.croak(msg)
-
-    def capture_bash_variables(self, string):
-        pattern = r"\$(?:(\w+)|\{([^}]*)\})"
-        matches = re.findall(pattern, string)
-        return [match[0] or match[1] for match in matches]
-
-    def replace_bash_variables(self, string):
-        def replace(match):
-            var_name = match.group(1) or match.group(2)
-            return os.getenv(var_name, match.group(0))
-
-        pattern = r"\$(?:(\w+)|\{([^}]*)\})"  # match $VAR or ${VAR}
-        return re.sub(pattern, replace, string)
 
 
 def get_tokens(input):
