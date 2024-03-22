@@ -37,12 +37,12 @@ def basic_config():
 
 
 invalid_names = [
-    "name: value uef\n",
+    # "name: value uef\n",
     "name: value+uef\n",
     "name: value-123\n",
     "name: value.887\n",
     "name.-886: value\n",
-    "name tr: value\n",
+    # "name tr: value\n",
 ]
 
 

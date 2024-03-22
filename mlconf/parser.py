@@ -18,9 +18,12 @@ def parse_config(token_stream, indent_count=0):
         token = token_stream.read_next()
         if token is None:
             break
-        elif token["type"] == "name":
-            name = token["value"]
-            skip_punc(token_stream, ":")
+        elif is_name_or_var(token):
+            if token["type"] == "name":
+                name = token["value"]
+            else:
+                name = parse_var(token_stream)
+            name += parse_string_var_combo(token_stream, is_colon)
             mlconfig[name] = parse_value(token_stream)
         elif token["type"] == "newline" or token["type"] == "indent":
             continue
@@ -46,7 +49,7 @@ def parse_value(token_stream):
         token = token_stream.read_next()
         if token is None:
             token_stream.croak("Unexpected end of file")
-        elif token["type"] in ["name", "string", "number", "bool", "null"]:
+        elif token["type"] in ["string", "number", "bool", "null"]:
             value = token["value"]
             skip_value_end(token_stream)
             return value
@@ -55,10 +58,13 @@ def parse_value(token_stream):
             return parse_config(token_stream, indent_count)
         elif token["type"] == "newline":
             continue
-        elif token["type"] == "punc" and token["value"] == "$":
-            value = parse_var(token_stream)
-            skip_value_end(token_stream)
-            return value
+        elif is_name_or_var(token):
+            if token["type"] == "name":
+                name = token["value"]
+            else:
+                name = parse_var(token_stream)
+            name += parse_string_var_combo(token_stream, is_end)
+            return name
         else:
             token_stream.croak(f"Unexpected token: {token}")
 
@@ -82,6 +88,40 @@ def parse_var(token_stream, count=0):
         token_stream.croak(f"Invalid_variable: {token}")
 
 
+def parse_string_var_combo(token_stream, delimiter):
+    """
+    This parses till a delimiter
+    """
+    value = ""
+    while True:
+        token = token_stream.read_next()
+        if token["type"] in ["string", "name"]:
+            value += token["value"]
+        elif token["type"] == "punc" and token["value"] == "$":
+            value += parse_var(token_stream)
+        elif token["type"] == "punc" and token["value"] == "/":
+            value += "/"
+            continue
+        elif delimiter(token):
+            return value
+        else:
+            token_stream.croak(f"Unexpected char: {token_stream.input.peek()}")
+
+
+def is_name_or_var(token):
+    """
+    This checks if the token is a name or a variable
+    """
+    return token["type"] == "name" or (token["type"] == "punc" and token["value"] == "$")
+
+
+def is_colon(token):
+    """
+    This checks if the token is a colon
+    """
+    return token["type"] == "punc" and token["value"] == ":"
+
+
 def skip_punc(token_stream, punc):
     """
     This skips a newline
@@ -91,6 +131,13 @@ def skip_punc(token_stream, punc):
         return
     else:
         token_stream.croak(f"Expected a {punc}, got: {token_stream.input.peek()}")
+
+
+def is_end(token):
+    """
+    This checks if the token is a newline
+    """
+    return token["type"] == "newline" or token["type"] == "dedent" or token is None
 
 
 def skip_value_end(token_stream):
