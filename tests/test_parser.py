@@ -186,6 +186,7 @@ def test_var_substitution(monkeypatch):
     """
     monkeypatch.setenv("HOME_DIR", "/home/user")
     monkeypatch.setenv("USER_NAME", "sash")
+    monkeypatch.setenv("DATA_DIR", "data")
     cfg_str = (
         "home_dir: $HOME_DIR\n"
         + "user_name: $USER_NAME\n"
@@ -196,6 +197,7 @@ def test_var_substitution(monkeypatch):
         + "  nested:\n"
         + "    home_dir: ${HOME_DIR}/$USER_NAME\n"
         + "    ${HOME_DIR}/$USER_NAME: True\n"
+        + "  ${HOME_DIR}/${USER_NAME}/${DATA_DIR}: ${DATA_DIR}_$USER_NAME\n"
     )
     cfg = mlconf.parse(cfg_str)
     print(cfg)
@@ -206,6 +208,7 @@ def test_var_substitution(monkeypatch):
     assert cfg.nested["/home/user"] == "sash"
     assert cfg.nested.nested.home_dir == "/home/user/sash"
     assert cfg.nested.nested["/home/user/sash"] == True
+    assert cfg.nested["/home/user/sash/data"] == "data_sash"
 
 
 def test_version():
