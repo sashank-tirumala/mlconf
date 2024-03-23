@@ -75,14 +75,36 @@ def parse_var(token_stream, count=0):
     """
     token = token_stream.read_next()
     if token["type"] == "name":
-        val = os.getenv(token["value"], None)
-        if val is None:
-            token_stream.croak(f"Environment variable not found: {token['value']}")
+        if count <= 1:
+            val = os.getenv(token["value"], None)
+            if val is None:
+                token_stream.croak(f"Environment variable not found: {token['value']}")
+        else:
+            val = "var(" + token["value"]
+            while True:
+                token = token_stream.read_next()
+                if token["type"] == "punc" and token["value"] == "}":
+                    break
+                elif token["type"] == "punc" and token["value"] == ".":
+                    val += "."
+                    token = token_stream.read_next()
+                    if token["type"] == "name":
+                        val += token["value"]
+                    else:
+                        token_stream.croak(f"Expected a name, got: {token}")
+                else:
+                    token_stream.croak("Expected a '.' or '}'" + f", got: {token}")
+            val += ")"
         return val
     elif token["type"] == "punc" and token["value"] == "{":
-        if count == 0:
+        if count <= 1:
             val = parse_var(token_stream, count + 1)
-            skip_punc(token_stream, "}")
+            if count == 0:
+                skip_punc(token_stream, "}")
+        else:
+            token_stream.croak(
+                f"Invalid number of brackets (more than 2), if this is a string please enclose it with quotes {token_stream.input.peek()}"
+            )
         return val
     else:
         token_stream.croak(f"Invalid_variable: {token}")
@@ -122,15 +144,19 @@ def is_colon(token):
     return token["type"] == "punc" and token["value"] == ":"
 
 
-def skip_punc(token_stream, punc):
+def skip_punc(token_stream, punc, no_croak=False):
     """
-    This skips a newline
+    This skips a punc-token
     """
     token = token_stream.read_next()
     if token["value"] == punc:
-        return
+        return True
     else:
-        token_stream.croak(f"Expected a {punc}, got: {token_stream.input.peek()}")
+        if no_croak:
+            return False
+        else:
+            print(token)
+            token_stream.croak(f"Expected a {punc}, got: {token_stream.input.peek()}")
 
 
 def is_end(token):
@@ -149,6 +175,19 @@ def skip_value_end(token_stream):
         return
     else:
         token_stream.croak(f"Expected a newline, got: {token}")
+
+
+def read_till_delimiter(token_stream, delimiter):
+    """
+    This reads till a delimiter
+    """
+    value = ""
+    while True:
+        token = token_stream.read_next()
+        if token["type"] == delimiter and token["value"] == delimiter:
+            return value
+        else:
+            value += token["value"]
 
 
 def parse(input):

@@ -110,6 +110,8 @@ class TokenStream:
 
     def read_number(self):
         str = self.read_while(lambda ch: self.is_digit(ch) or re.match(r"e|E", ch))
+        if str == ".":
+            return {"type": "punc", "value": "."}
         try:
             return {"type": "number", "value": float(str)}
         except ValueError:

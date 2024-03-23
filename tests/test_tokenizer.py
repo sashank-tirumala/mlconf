@@ -502,6 +502,7 @@ def test_var_format():
     config = "path: $HO1ME__25\n"
     config += "path2: ${{HOME}}\n"
     config += "path_$HI_3: ${HOME_HOMEY}/config/dev\n"
+    config += "path3: ${{path2.path3.path.pathx}}\n"
     tokens = get_tokens(config)
     assert tokens == [
         {"type": "name", "value": "path"},
@@ -530,6 +531,21 @@ def test_var_format():
         {"type": "name", "value": "config"},
         {"type": "punc", "value": "/"},
         {"type": "name", "value": "dev"},
+        {"type": "newline", "value": "\n"},
+        {"type": "name", "value": "path3"},
+        {"type": "punc", "value": ":"},
+        {"type": "punc", "value": "$"},
+        {"type": "punc", "value": "{"},
+        {"type": "punc", "value": "{"},
+        {"type": "name", "value": "path2"},
+        {"type": "punc", "value": "."},
+        {"type": "name", "value": "path3"},
+        {"type": "punc", "value": "."},
+        {"type": "name", "value": "path"},
+        {"type": "punc", "value": "."},
+        {"type": "name", "value": "pathx"},
+        {"type": "punc", "value": "}"},
+        {"type": "punc", "value": "}"},
         {"type": "newline", "value": "\n"},
     ]
 

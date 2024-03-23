@@ -197,10 +197,12 @@ def test_var_substitution(monkeypatch):
         + "  nested:\n"
         + "    home_dir: ${HOME_DIR}/$USER_NAME\n"
         + "    ${HOME_DIR}/$USER_NAME: True\n"
+        + "    ${HOME_DIR}/$USER_NAME/${DATA_DIR}: ${{user_name}}_${{nested.home_dir}}\n"
         + "  ${HOME_DIR}/${USER_NAME}/${DATA_DIR}: ${DATA_DIR}_$USER_NAME\n"
+        + "  ${HOME_DIR}/$USER_NAME/data1: ${{ nested.home_dir }}\n"
+        + "  ${HOME_DIR}/$USER_NAME/data2: ${{ nested.nested.home_dir }}\n"
     )
     cfg = mlconf.parse(cfg_str)
-    print(cfg)
     assert cfg.home_dir == "/home/user"
     assert cfg.user_name == "sash"
     assert cfg.nested.home_dir == "/home/user"
@@ -208,7 +210,10 @@ def test_var_substitution(monkeypatch):
     assert cfg.nested["/home/user"] == "sash"
     assert cfg.nested.nested.home_dir == "/home/user/sash"
     assert cfg.nested.nested["/home/user/sash"] == True
+    assert cfg.nested.nested["/home/user/sash/data"] == "var(user_name)_var(nested.home_dir)"
     assert cfg.nested["/home/user/sash/data"] == "data_sash"
+    assert cfg.nested["/home/user/sash/data1"] == "var(nested.home_dir)"
+    assert cfg.nested["/home/user/sash/data2"] == "var(nested.nested.home_dir)"
 
 
 def test_version():
