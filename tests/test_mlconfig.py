@@ -53,3 +53,20 @@ def test_get_leafnode_val(basic_config):
     assert cfg.get_leafnode_val("b") == "2"
     assert cfg.get_leafnode_val("c") == True
     assert cfg.get_leafnode_val("d") == None
+
+
+def test_leafnode_name_value_list(basic_config):
+    cfg = basic_config
+    assert cfg.leafnode_name_value_list == [
+        ("a", 1),
+        ("b", "2"),
+        ("c", True),
+        ("d", None),
+        ("e.f", 3),
+        ("e.g", "4"),
+        ("e.h", False),
+        ("e.i", None),
+        ("e.j.k", 5),
+        ("e.j.l", "6"),
+        ("f", 0.07),
+    ]

@@ -94,11 +94,10 @@ class MLConfig:
         return list(self.__dict__.keys())
 
     @property
-    def names_children_dict(self):
+    def leafnode_name_value_list(self):
+        leafnode_repr_list = []
         cfg_name_str_list = self.__cfgnamestrlist__()
         for name in cfg_name_str_list:
-            val = self.get_leafnode(name)
-            if val is not None:
-                self.leafnode_repr_list.append((name, val))
-            else:
-                logging.error(f"Key {name} not found in {self}, skipping")
+            val = self.get_leafnode_val(name)
+            leafnode_repr_list.append((name, val))
+        return leafnode_repr_list[0:-1]
