@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from mlconf.mlconfig import MLConfig
+
 
 def get_import_path_if_exists(path_str, base_path):
     path_strs = []
@@ -18,3 +20,11 @@ def get_import_path_if_exists(path_str, base_path):
         if abs_path.exists():
             return abs_path
     return None
+
+
+def get_var_stack(config: MLConfig, cfg_name=""):
+    leafnode_name_value_list = config.leafnode_name_value_list
+    var_stack = {}
+    for name, value in leafnode_name_value_list:
+        var_stack[cfg_name + "." + name] = value
+    return var_stack
