@@ -226,13 +226,44 @@ def test_import_substitution(tmpdir, monkeypatch):
     import_config2 = tmpdir / "h2h1.yml"
     with open(import_config2, "w") as f:
         f.write("c: test\na: None\n")
-    import_config3 = tmpdir / "h3h1.mlconf"
+    import_config3 = tmpdir / "h3h1.yaml"
     with open(import_config3, "w") as f:
         f.write("b: 3e+2\nc:\n  b: -6e-3\n")
     cfg_str = (
         "import h1h2\n"
         "import h2h1\n"
         "import h3h1 as imp\n"
+        + "a: 1\n"
+        + "b: 2\n"
+        + "c: True\n"
+        + "d: ${{imp.c.b}}\n"
+        + "e:\n"
+        + "  b: 3e+2\n"
+        + "  c: +4e2\n"
+        + "  d: ${{ h2h1.c }}\n"
+        + "  e: ${{ h1h2.b }}\n"
+        + "  g:\n"
+        + "    a: $MLCONF_TEST\n"
+        + "    b: -6e-3\n"
+        + "g: ${{ h1h2.a }}\n"
+    )
+    cfg = mlconf.parse(cfg_str, base_path=Path(tmpdir))
+    assert cfg.a == 1
+    assert cfg.b == 2
+    assert cfg.c == True
+    assert cfg.d == -0.006
+    assert cfg.e.b == 300
+    assert cfg.e.c == 400
+    assert cfg.e.d == "test"
+    assert cfg.e.e == 2.0
+    assert cfg.e.g.a == "test"
+    assert cfg.e.g.b == -0.006
+    assert cfg.g == 1.0
+
+    cfg_str = (
+        f"import '{str(import_config)}'\n"
+        f"import '{str(import_config2)}'\n"
+        f"import '{str(import_config3)}' as imp\n"
         + "a: 1\n"
         + "b: 2\n"
         + "c: True\n"

@@ -138,7 +138,7 @@ def parse_import(token_stream, base_path):
     This parses an import
     """
     token = token_stream.read_next()
-    if token["type"] != "name":
+    if token["type"] not in ["string", "name"]:
         token_stream.croak(f"Expected name of a file, got: {token['value']}")
     file_name = get_import_path_if_exists(token["value"], base_path)
     if file_name is None:
