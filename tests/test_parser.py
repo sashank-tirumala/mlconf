@@ -210,10 +210,10 @@ def test_var_substitution(monkeypatch):
     assert cfg.nested["/home/user"] == "sash"
     assert cfg.nested.nested.home_dir == "/home/user/sash"
     assert cfg.nested.nested["/home/user/sash"] == True
-    assert cfg.nested.nested["/home/user/sash/data"] == "var(user_name)_var(nested.home_dir)"
+    assert cfg.nested.nested["/home/user/sash/data"] == "sash_/home/user"
     assert cfg.nested["/home/user/sash/data"] == "data_sash"
-    assert cfg.nested["/home/user/sash/data1"] == "var(nested.home_dir)"
-    assert cfg.nested["/home/user/sash/data2"] == "var(nested.nested.home_dir)"
+    assert cfg.nested["/home/user/sash/data1"] == "/home/user"
+    assert cfg.nested["/home/user/sash/data2"] == "/home/user/sash"
 
 
 def test_version():

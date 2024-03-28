@@ -1,5 +1,5 @@
+import logging
 import os
-import re
 
 from mlconf.input_stream import InputStream
 from mlconf.mlconfig import MLConfig
@@ -35,7 +35,7 @@ def parse_config(token_stream, indent_count=0):
             mlconfig[name] = parse_value(token_stream)
         else:
             token_stream.croak(f"Unexpected token, probably a number or a string with no name: {token}")
-    return mlconfig
+    return interpet_config(mlconfig)
 
 
 def parse_value(token_stream):
@@ -205,11 +205,51 @@ def parse_cli_input(input):
             return input
 
 
-def interpet_config(config):
-    dfs = [config]
-    visited = set()
+def interpet_config(config: MLConfig):
+    leafnode_name_value_list = config.leafnode_name_value_list
     var_stack = {}
-    base_name = ""
+    for name, value in leafnode_name_value_list:
+        if name in var_stack:
+            raise ValueError(f"Variable {name} already exists")
+        if isinstance(value, str):
+            var = parse_local_var(value, var_stack)
+            config.set_leafnode_val(name, var)
+            var_stack[name] = var
+        else:
+            var_stack[name] = value
+    return config
+
+
+def parse_local_var(value, var_stack):
+    res = ""
+    i = 0
+    last4_chars = ""
+    read_var_state = False
+    for i in range(len(value)):
+        char = value[i]
+        if read_var_state:
+            if char == ")":
+                if var_name not in var_stack:
+                    raise ValueError(f"Variable {res} not defined")
+                res += str(var_stack[var_name])
+                read_var_state = False
+            else:
+                var_name += char
+        else:
+            if len(last4_chars) == 4:
+                last4_chars = last4_chars[1:] + char
+            else:
+                last4_chars += char
+            if last4_chars == "var(":
+                last4_chars = ""
+                res = res[:-3]
+                read_var_state = True
+                var_name = ""
+            else:
+                res += char
+        i += 1
+    # print(res)
+    return res
 
 
 if __name__ == "__main__":

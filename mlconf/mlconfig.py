@@ -89,6 +89,28 @@ class MLConfig:
                 return None
             return value
 
+    def set_leafnode_val(self, key, value):
+        """
+        Sets the leafnode of the key,
+        A nested key can be accessed using a dot (.) separator (e.g. a.b.c)
+        """
+        cur_cfg = self
+        attrs = key.split(".")
+        while len(attrs) > 1:
+            if not isinstance(cur_cfg, MLConfig) or attrs[0] not in cur_cfg.__dict__:
+                logging.error(f"Key {key} not found in {cur_cfg}")
+                return None
+            cur_cfg = getattr(cur_cfg, attrs.pop(0))
+        if type(cur_cfg) is not MLConfig:
+            logging.error(f"Key {key} is not a leafnode in {cur_cfg}")
+            return None
+        else:
+            if attrs[0] not in cur_cfg.__dict__:
+                logging.error(f"Key {key} not found in {cur_cfg}")
+                return None
+            setattr(cur_cfg, attrs[0], value)
+            return value
+
     @property
     def children(self):
         return list(self.__dict__.keys())
