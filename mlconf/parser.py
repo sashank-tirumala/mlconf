@@ -248,7 +248,6 @@ def parse_local_var(value, var_stack):
             else:
                 res += char
         i += 1
-    # print(res)
     return res
 
 
