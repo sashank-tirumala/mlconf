@@ -146,9 +146,20 @@ def parse_import(token_stream, base_path):
     with open(file_name, "r") as f:
         config = f.read()
     config = parse(config, base_path=file_name.parent)
-    file_name = file_name.stem
-    var_stack = get_var_stack(config, file_name)
-    return var_stack
+    token = token_stream.read_next()
+    if token["type"] == "newline":
+        file_name = file_name.stem
+        var_stack = get_var_stack(config, file_name)
+        return var_stack
+    elif token["type"] == "as":
+        token = token_stream.read_next()
+        if token["type"] != "name":
+            token_stream.croak(f"Expected a name, got: {token['value']}")
+        file_name = token["value"]
+        var_stack = get_var_stack(config, file_name)
+        return var_stack
+    else:
+        token_stream.croak(f"Expected a newline or 'as', got: {token['value']}")
 
 
 def is_name_or_var(token):
