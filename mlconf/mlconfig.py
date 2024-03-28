@@ -1,3 +1,6 @@
+import logging
+
+
 class MLConfig:
     def __init__(self, key=None, value=None):
         if key is not None and value is not None:
@@ -60,3 +63,42 @@ class MLConfig:
         if isinstance(other, MLConfig):
             return self.__dict__ == other.__dict__
         return False
+
+    def get_leafnode_val(self, key):
+        """
+        Returns the leafnode of the key,
+        A nested key can be accessed using a dot (.) separator (e.g. a.b.c)
+        """
+        cur_cfg = self
+        attrs = key.split(".")
+        while len(attrs) > 1:
+            if not isinstance(cur_cfg, MLConfig) or attrs[0] not in cur_cfg.__dict__:
+                logging.error(f"Key {key} not found in {cur_cfg}")
+                return None
+            cur_cfg = getattr(cur_cfg, attrs.pop(0))
+        if type(cur_cfg) is not MLConfig:
+            logging.error(f"Key {key} is not a leafnode in {cur_cfg}")
+            return None
+        else:
+            if attrs[0] not in cur_cfg.__dict__:
+                logging.error(f"Key {key} not found in {cur_cfg}")
+                return None
+            value = getattr(cur_cfg, attrs[0])
+            if isinstance(value, MLConfig):
+                logging.error(f"Key {key} is not a leafnode in {cur_cfg}")
+                return None
+            return value
+
+    @property
+    def children(self):
+        return list(self.__dict__.keys())
+
+    @property
+    def names_children_dict(self):
+        cfg_name_str_list = self.__cfgnamestrlist__()
+        for name in cfg_name_str_list:
+            val = self.get_leafnode(name)
+            if val is not None:
+                self.leafnode_repr_list.append((name, val))
+            else:
+                logging.error(f"Key {name} not found in {self}, skipping")

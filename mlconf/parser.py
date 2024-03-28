@@ -5,9 +5,6 @@ from mlconf.input_stream import InputStream
 from mlconf.mlconfig import MLConfig
 from mlconf.tokenizer import TokenStream
 
-BASH_VAR_PATTERN_WITH_BRACKETS = r"\$\{([a-zA-Z0-9_]+)\}(?!\})"  # This matches ${name} but not ${{name}}
-BASH_VAR_PATTERN_RAW = r"\$(?:(\w+))"
-
 
 def parse_config(token_stream, indent_count=0):
     """
@@ -206,6 +203,13 @@ def parse_cli_input(input):
             return None
         else:
             return input
+
+
+def interpet_config(config):
+    dfs = [config]
+    visited = set()
+    var_stack = {}
+    base_name = ""
 
 
 if __name__ == "__main__":
