@@ -28,3 +28,12 @@ def get_var_stack(config: MLConfig, cfg_name=""):
     for name, value in leafnode_name_value_list:
         var_stack[cfg_name + "." + name] = value
     return var_stack
+
+
+def merge_dicts(dict1, dict2):
+    try:
+        merged_dict = dict1.copy()
+        merged_dict.update(dict2)
+        return merged_dict
+    except Exception as e:
+        return None

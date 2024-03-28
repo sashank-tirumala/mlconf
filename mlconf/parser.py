@@ -1,20 +1,26 @@
-import logging
 import os
+from pathlib import Path
 
 from mlconf.input_stream import InputStream
 from mlconf.mlconfig import MLConfig
 from mlconf.tokenizer import TokenStream
+from mlconf.utils import get_import_path_if_exists, get_var_stack, merge_dicts
 
 
-def parse_config(token_stream, indent_count=0):
+def parse_config(token_stream, indent_count=0, base_path=Path(".")):
     """
     This parses an entire configuration file
     """
     mlconfig = MLConfig()
+    import_vars = {}
     while True:
         token = token_stream.read_next()
         if token is None:
             break
+        elif is_import(token):
+            import_vars = merge_dicts(import_vars, parse_import(token_stream, base_path))
+            if import_vars is None:
+                token_stream.croak(f"Import failed (probably same variable name is being redefined): {token['value']}")
         elif is_name_or_var(token):
             if token["type"] == "name":
                 name = token["value"]
@@ -35,7 +41,7 @@ def parse_config(token_stream, indent_count=0):
             mlconfig[name] = parse_value(token_stream)
         else:
             token_stream.croak(f"Unexpected token, probably a number or a string with no name: {token}")
-    return interpet_config(mlconfig)
+    return interpet_config(mlconfig, import_vars)
 
 
 def parse_value(token_stream):
@@ -127,6 +133,24 @@ def parse_string_var_combo(token_stream, delimiter):
             token_stream.croak(f"Unexpected char: {token_stream.input.peek()}")
 
 
+def parse_import(token_stream, base_path):
+    """
+    This parses an import
+    """
+    token = token_stream.read_next()
+    if token["type"] != "name":
+        token_stream.croak(f"Expected name of a file, got: {token['value']}")
+    file_name = get_import_path_if_exists(token["value"], base_path)
+    if file_name is None:
+        token_stream.croak(f"File {token['value']} not found")
+    with open(file_name, "r") as f:
+        config = f.read()
+    config = parse(config, base_path=file_name.parent)
+    file_name = file_name.stem
+    var_stack = get_var_stack(config, file_name)
+    return var_stack
+
+
 def is_name_or_var(token):
     """
     This checks if the token is a name or a variable
@@ -139,6 +163,13 @@ def is_colon(token):
     This checks if the token is a colon
     """
     return token["type"] == "punc" and token["value"] == ":"
+
+
+def is_import(token):
+    """
+    This checks if the token is an import
+    """
+    return token["type"] == "import"
 
 
 def skip_punc(token_stream, punc, no_croak=False):
@@ -187,8 +218,8 @@ def read_till_delimiter(token_stream, delimiter):
             value += token["value"]
 
 
-def parse(input):
-    return parse_config(TokenStream(InputStream(input)))
+def parse(input, base_path=Path(".")):
+    return parse_config(TokenStream(InputStream(input)), base_path=base_path)
 
 
 def parse_cli_input(input):
@@ -205,9 +236,8 @@ def parse_cli_input(input):
             return input
 
 
-def interpet_config(config: MLConfig):
+def interpet_config(config: MLConfig, var_stack):
     leafnode_name_value_list = config.leafnode_name_value_list
-    var_stack = {}
     for name, value in leafnode_name_value_list:
         if name in var_stack:
             raise ValueError(f"Variable {name} already exists")
@@ -230,8 +260,14 @@ def parse_local_var(value, var_stack):
         if read_var_state:
             if char == ")":
                 if var_name not in var_stack:
-                    raise ValueError(f"Variable {res} not defined")
-                res += str(var_stack[var_name])
+                    raise ValueError(f"Variable {var_name} not defined")
+                val = var_stack[var_name]
+                if isinstance(val, str):
+                    res += str(var_stack[var_name])
+                else:
+                    # TODO: Error out if a non string followed by a string
+                    res = val
+                    break
                 read_var_state = False
             else:
                 var_name += char
