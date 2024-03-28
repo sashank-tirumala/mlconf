@@ -134,6 +134,8 @@ class TokenStream:
             return {"type": "bool", "value": False}
         elif str == "null" or str == "None":
             return {"type": "null", "value": None}
+        elif str == "import":
+            return {"type": "import", "value": "import"}
         else:
             return {"type": "name", "value": str}
 

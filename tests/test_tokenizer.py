@@ -425,6 +425,7 @@ def test_bug_config_repeat_nested():
     This test is to check if the tokenizer can handle an input with repeated nested keys
     """
     cfg = (
+        "import a12bcd\n"
         "a: 1\n"
         + "b: 2\n"
         + "c: True\n"
@@ -441,6 +442,9 @@ def test_bug_config_repeat_nested():
     )
     tokens = get_tokens(cfg)
     assert tokens == [
+        {"type": "import", "value": "import"},
+        {"type": "name", "value": "a12bcd"},
+        {"type": "newline", "value": "\n"},
         {"type": "name", "value": "a"},
         {"type": "punc", "value": ":"},
         {"type": "number", "value": 1.0},
@@ -549,12 +553,12 @@ def test_var_format():
         {"type": "newline", "value": "\n"},
     ]
 
-    # monkeypatch.setenv("HOME_HOMEY", "abvdef")
-    # config = 'path: "${HOME_HOMEY}/config/dev"\n'
-    # tokens = get_tokens(config)
-    # assert tokens == [
-    #     {"type": "name", "value": "path"},
-    #     {"type": "punc", "value": ":"},
-    #     {"type": "string", "value": "${HOME_HOMEY}/config/dev"},
-    #     {"type": "newline", "value": "\n"},
-    # ]
+
+def test_import_statement():
+    cfg = "import config\n"
+    tokens = get_tokens(cfg)
+    assert tokens == [
+        {"type": "import", "value": "import"},
+        {"type": "name", "value": "config"},
+        {"type": "newline", "value": "\n"},
+    ]
