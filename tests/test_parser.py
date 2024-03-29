@@ -305,5 +305,14 @@ def test_import_substitution(tmpdir, monkeypatch):
     assert cfg.g == 1.0
 
 
+def test_simple_lists():
+    cfg_str = "a: [1, 2, 3]\n" + "b: [True, None, false, 1e2, 'hello', world]\n" + "c:\n" + "  d: [-1e-3, 0.2]"
+    cfg = mlconf.parse(cfg_str)
+    assert cfg.a == [1, 2, 3]
+    assert cfg.b == [True, None, False, 100.0, "hello", "world"]
+    assert cfg.c.d == [-0.001, 0.2]
+    assert len(cfg) == 3
+
+
 def test_version():
     assert __version__ == "0.1.0"

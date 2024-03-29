@@ -68,6 +68,34 @@ def parse_value(token_stream):
                 name = parse_var(token_stream)
             name += parse_string_var_combo(token_stream, is_end)
             return name
+        elif token["type"] == "punc" and token["value"] == "[":
+            return parse_list(token_stream)
+        else:
+            token_stream.croak(f"Unexpected token: {token}")
+
+
+def parse_value_list(token_stream):
+    """
+    This parses a value
+    """
+    while True:
+        token = token_stream.read_next()
+        if token is None:
+            token_stream.croak("Unexpected end of file")
+        elif token["type"] in ["string", "number", "bool", "null"]:
+            value = token["value"]
+            return value
+        elif token["type"] == "indent":
+            token_stream.croak("Unexpected indent")
+        elif token["type"] == "newline":
+            continue
+        elif is_name_or_var(token):
+            if token["type"] == "name":
+                name = token["value"]
+            else:
+                name = parse_var(token_stream)
+            name += parse_string_var_combo(token_stream, is_list_end)
+            return name
         else:
             token_stream.croak(f"Unexpected token: {token}")
 
@@ -172,6 +200,25 @@ def parse_import(token_stream, base_path):
     return var_stack
 
 
+def parse_list(token_stream):
+    """
+    This parses a list, right now enclosed in square brackets.
+    """
+    res = []
+    while True:
+        res.append(parse_value_list(token_stream))
+        token = token_stream.read_next()
+        if token is None:
+            token_stream.croak("Unexpected end of file")
+        if token["type"] == "punc" and token["value"] == "]":
+            return res
+        elif token["type"] == "punc" and token["value"] == ",":
+            continue
+        else:
+            token_stream.croak(f"Expected a comma or a ']', got: {token}")
+            break
+
+
 def is_name_or_var(token):
     """
     This checks if the token is a name or a variable
@@ -211,7 +258,18 @@ def is_end(token):
     """
     This checks if the token is a newline
     """
-    return token["type"] == "newline" or token["type"] == "dedent" or token is None
+    if token is None:
+        return True
+    return token["type"] == "newline" or token["type"] == "dedent"
+
+
+def is_list_end(token):
+    """
+    This checks if the token is a newline
+    """
+    if token is None:
+        return False
+    return (token["type"] == "punc" and token["value"] == ",") or (token["type"] == "punc" and token["value"] == "]")
 
 
 def skip_value_end(token_stream):
@@ -310,24 +368,9 @@ def parse_local_var(value, var_stack):
 
 
 if __name__ == "__main__":
-    cfg_str = (
-        "import h1h2\n"
-        "import sub_test.h2h1\n"
-        "import h3h1 as imp\n"
-        + "a: 1\n"
-        + "b: 2\n"
-        + "c: True\n"
-        + "d: ${{imp.test.test1}}\n"
-        + "e:\n"
-        + "  b: 3e+2\n"
-        + "  c: +4e2\n"
-        + "  d: ${{ h2h1.c.d}}\n"
-        + "  e: ${{ h1h2.b.c }}\n"
-        + "  g:\n"
-        + "    a: ttt\n"
-        + "    b: -6e-3\n"
-        + "g: ${{ h1h2.a }}\n"
-    )
+    # cfg_str = "a: [1, 2, 3]\n" + "b: 2\n" + "c: True\n" + "d :[None, true, false, 1e9]"
+    cfg_str = "a: [1, 2, 3]\n" + "b: [True, None, false, 1e2, 'hello', world]\n" + "c:\n" + "  d: [-1e-3, 0.2]"
+
     # config = "string:test\n"
     # config += "string2: \n"
     # config += "  test:1\n"
