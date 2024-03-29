@@ -137,29 +137,39 @@ def parse_import(token_stream, base_path):
     """
     This parses an import
     """
-    token = token_stream.read_next()
-    if token["type"] not in ["string", "name"]:
-        token_stream.croak(f"Expected name of a file, got: {token['value']}")
-    file_name = get_import_path_if_exists(token["value"], base_path)
-    if file_name is None:
-        token_stream.croak(f"File {token['value']} not found")
-    with open(file_name, "r") as f:
-        config = f.read()
-    config = parse(config, base_path=file_name.parent)
-    token = token_stream.read_next()
-    if token["type"] == "newline":
-        file_name = file_name.stem
-        var_stack = get_var_stack(config, file_name)
-        return var_stack
-    elif token["type"] == "as":
+    res_path = ""
+    file_name = ""
+    while True:
         token = token_stream.read_next()
-        if token["type"] != "name":
-            token_stream.croak(f"Expected a name, got: {token['value']}")
-        file_name = token["value"]
-        var_stack = get_var_stack(config, file_name)
-        return var_stack
-    else:
-        token_stream.croak(f"Expected a newline or 'as', got: {token['value']}")
+        if token["type"] == "string" or token["type"] == "name":
+            res_path += token["value"]
+            token = token_stream.read_next()
+            if token["type"] == "punc" and token["value"] == ".":
+                res_path += "/"
+                continue
+            elif token["type"] == "newline":
+                file_name = Path(res_path).stem
+                break
+            elif token["type"] == "as":
+                token = token_stream.read_next()
+                if token["type"] == "name":
+                    file_name = token["value"]
+                    break
+                else:
+                    token_stream.croak(f"Expected a name, got: {token['value']}")
+            else:
+                token_stream.croak(f"Expected a newline or 'as', got: {token['value']}")
+        else:
+            token_stream.croak(f"Expected a string or a name, got: {token['value']}")
+            break
+    file_path = get_import_path_if_exists(res_path, base_path)
+    if file_path is None:
+        token_stream.croak(f"File {token['value']} not found")
+    with open(file_path, "r") as f:
+        config = f.read()
+    config = parse(config, base_path=file_path.parent)
+    var_stack = get_var_stack(config, file_name)
+    return var_stack
 
 
 def is_name_or_var(token):
@@ -194,7 +204,6 @@ def skip_punc(token_stream, punc, no_croak=False):
         if no_croak:
             return False
         else:
-            print(token)
             token_stream.croak(f"Expected a {punc}, got: {token_stream.input.peek()}")
 
 
@@ -210,7 +219,9 @@ def skip_value_end(token_stream):
     This skips a newline
     """
     token = token_stream.read_next()
-    if token["type"] == "newline" or token["type"] == "dedent" or token is None:
+    if token is None:
+        return
+    elif token["type"] == "newline" or token["type"] == "dedent":
         return
     else:
         token_stream.croak(f"Expected a newline, got: {token}")
@@ -299,10 +310,28 @@ def parse_local_var(value, var_stack):
 
 
 if __name__ == "__main__":
-    config = "string:test\n"
-    config += "string2: \n"
-    config += "  test:1\n"
-    config += "  string3:\n"
-    config += "    test:1\n"
-    config += "number: 1.0"
-    print(parse(config))
+    cfg_str = (
+        "import h1h2\n"
+        "import sub_test.h2h1\n"
+        "import h3h1 as imp\n"
+        + "a: 1\n"
+        + "b: 2\n"
+        + "c: True\n"
+        + "d: ${{imp.test.test1}}\n"
+        + "e:\n"
+        + "  b: 3e+2\n"
+        + "  c: +4e2\n"
+        + "  d: ${{ h2h1.c.d}}\n"
+        + "  e: ${{ h1h2.b.c }}\n"
+        + "  g:\n"
+        + "    a: ttt\n"
+        + "    b: -6e-3\n"
+        + "g: ${{ h1h2.a }}\n"
+    )
+    # config = "string:test\n"
+    # config += "string2: \n"
+    # config += "  test:1\n"
+    # config += "  string3:\n"
+    # config += "    test:1\n"
+    # config += "number: 1.0"
+    print(parse(cfg_str, base_path=Path("/home/robot/projects/mlconf/tests/test_confs")))

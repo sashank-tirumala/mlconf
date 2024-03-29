@@ -221,6 +221,9 @@ def test_var_substitution(monkeypatch):
 def test_import_substitution(tmpdir, monkeypatch):
     monkeypatch.setenv("MLCONF_TEST", "test")
     import_config = tmpdir / "h1h2.mlconf"
+    sub_dir = Path(tmpdir / "subdir")
+    sub_sub_dir = Path(sub_dir / "subsubdir")
+    sub_sub_dir.mkdir(parents=True)
     with open(import_config, "w") as f:
         f.write("a: 1\nb: 2\n")
     import_config2 = tmpdir / "h2h1.yml"
@@ -229,12 +232,20 @@ def test_import_substitution(tmpdir, monkeypatch):
     import_config3 = tmpdir / "h3h1.yaml"
     with open(import_config3, "w") as f:
         f.write("b: 3e+2\nc:\n  b: -6e-3\n")
+    import_config4 = sub_dir / "abcdef.mlconf"
+    with open(import_config4, "w") as f:
+        f.write("c: test\na: None\n")
+    import_config5 = sub_sub_dir / "abcxyz.mlconf"
+    with open(import_config5, "w") as f:
+        f.write("c: test\na: None\n")
     cfg_str = (
         "import h1h2\n"
-        "import h2h1\n"
-        "import h3h1 as imp\n"
-        + "a: 1\n"
-        + "b: 2\n"
+        + "import h2h1\n"
+        + "import h3h1 as imp\n"
+        + "import subdir.abcdef\n"
+        + "import subdir.subsubdir.abcxyz as imp2\n"
+        + "a: ${{ abcdef.c }}\n"
+        + "b: ${{ imp2.a }}\n"
         + "c: True\n"
         + "d: ${{imp.c.b}}\n"
         + "e:\n"
@@ -248,8 +259,8 @@ def test_import_substitution(tmpdir, monkeypatch):
         + "g: ${{ h1h2.a }}\n"
     )
     cfg = mlconf.parse(cfg_str, base_path=Path(tmpdir))
-    assert cfg.a == 1
-    assert cfg.b == 2
+    assert cfg.a == "test"
+    assert cfg.b == None
     assert cfg.c == True
     assert cfg.d == -0.006
     assert cfg.e.b == 300
@@ -262,10 +273,12 @@ def test_import_substitution(tmpdir, monkeypatch):
 
     cfg_str = (
         f"import '{str(import_config)}'\n"
-        f"import '{str(import_config2)}'\n"
-        f"import '{str(import_config3)}' as imp\n"
-        + "a: 1\n"
-        + "b: 2\n"
+        + f"import '{str(import_config2)}'\n"
+        + f"import '{str(import_config3)}' as imp\n"
+        + f"import '{str(import_config4)}'\n"
+        + f"import '{str(import_config5)}' as imp2\n"
+        + "a: ${{ abcdef.c }}\n"
+        + "b: ${{ imp2.a}}\n"
         + "c: True\n"
         + "d: ${{imp.c.b}}\n"
         + "e:\n"
@@ -279,8 +292,8 @@ def test_import_substitution(tmpdir, monkeypatch):
         + "g: ${{ h1h2.a }}\n"
     )
     cfg = mlconf.parse(cfg_str, base_path=Path(tmpdir))
-    assert cfg.a == 1
-    assert cfg.b == 2
+    assert cfg.a == "test"
+    assert cfg.b == None
     assert cfg.c == True
     assert cfg.d == -0.006
     assert cfg.e.b == 300
