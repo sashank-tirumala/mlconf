@@ -562,3 +562,38 @@ def test_import_statement():
         {"type": "name", "value": "config"},
         {"type": "newline", "value": "\n"},
     ]
+
+
+def test_list():
+    cfg = "list: [1, 2, 3]\n"
+    tokens = get_tokens(cfg)
+    assert tokens == [
+        {"type": "name", "value": "list"},
+        {"type": "punc", "value": ":"},
+        {"type": "punc", "value": "["},
+        {"type": "number", "value": 1.0},
+        {"type": "punc", "value": ","},
+        {"type": "number", "value": 2.0},
+        {"type": "punc", "value": ","},
+        {"type": "number", "value": 3.0},
+        {"type": "punc", "value": ","},
+        {"type": "punc", "value": "]"},
+        {"type": "newline", "value": "\n"},
+    ]
+
+    cfg = "list: [1, 2, 3,]\n"
+    tokens = get_tokens(cfg)
+    assert tokens == [
+        {"type": "name", "value": "list"},
+        {"type": "punc", "value": ":"},
+        {"type": "punc", "value": "["},
+        {"type": "number", "value": 1.0},
+        {"type": "punc", "value": ","},
+        {"type": "number", "value": 2.0},
+        {"type": "punc", "value": ","},
+        {"type": "number", "value": 3.0},
+        {"type": "punc", "value": ","},
+        {"type": "punc", "value": ","},
+        {"type": "punc", "value": "]"},
+        {"type": "newline", "value": "\n"},
+    ]

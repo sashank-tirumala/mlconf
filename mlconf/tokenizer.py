@@ -15,6 +15,7 @@ class TokenStream:
         self.indents = [0]
         self.current = None
         self.is_last_token = False
+        self.returned_comma_before_bracket = False
         self.dedents = []
 
     def read_next(self):
@@ -44,6 +45,13 @@ class TokenStream:
         elif self.is_digit(ch):
             return self.read_number()
         elif self.is_punc(ch):
+            if ch == "]":
+                if self.returned_comma_before_bracket:
+                    self.returned_comma_before_bracket = False
+                    return {"type": "punc", "value": self.input.next()}
+                else:
+                    self.returned_comma_before_bracket = True
+                    return {"type": "punc", "value": ","}
             return {"type": "punc", "value": self.input.next()}
         elif self.is_char(ch):
             return self.read_keyword()

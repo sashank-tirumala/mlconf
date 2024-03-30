@@ -1,10 +1,24 @@
 import os
+from enum import Enum, auto
 from pathlib import Path
 
 from mlconf.input_stream import InputStream
 from mlconf.mlconfig import MLConfig
 from mlconf.tokenizer import TokenStream
 from mlconf.utils import get_import_path_if_exists, get_var_stack, merge_dicts
+
+
+class ParseState(Enum):
+    """
+    Some custom states for the parser
+    """
+
+    EndOfList = auto()
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, int):
+            return False
+        return super().__eq__(other)
 
 
 def parse_config(token_stream, indent_count=0, base_path=Path(".")):
@@ -96,6 +110,14 @@ def parse_value_list(token_stream):
                 name = parse_var(token_stream)
             name += parse_string_var_combo(token_stream, is_list_end)
             return name
+        elif token["type"] == "punc" and token["value"] == "[":
+            return parse_list(token_stream)
+        elif token["type"] == "punc" and token["value"] == "]":
+            return ParseState.EndOfList
+        elif token["type"] == "punc" and token["value"] == ",":
+            continue
+        elif token is None:
+            token_stream.croak("Unexpected end of file")
         else:
             token_stream.croak(f"Unexpected token: {token}")
 
@@ -206,7 +228,11 @@ def parse_list(token_stream):
     """
     res = []
     while True:
-        res.append(parse_value_list(token_stream))
+        val = parse_value_list(token_stream)
+        if val != ParseState.EndOfList:
+            res.append(val)
+        else:
+            return res
         token = token_stream.read_next()
         if token is None:
             token_stream.croak("Unexpected end of file")
@@ -269,7 +295,7 @@ def is_list_end(token):
     """
     if token is None:
         return False
-    return (token["type"] == "punc" and token["value"] == ",") or (token["type"] == "punc" and token["value"] == "]")
+    return token["type"] == "punc" and token["value"] == ","
 
 
 def skip_value_end(token_stream):
