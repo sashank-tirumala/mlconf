@@ -395,7 +395,7 @@ def parse_local_var(value, var_stack):
 
 if __name__ == "__main__":
     # cfg_str = "a: [1, 2, 3]\n" + "b: 2\n" + "c: True\n" + "d :[None, true, false, 1e9]"
-    cfg_str = "a: [1, 2, 3]\n" + "b: [True, None, false, 1e2, 'hello', world]\n" + "c:\n" + "  d: [-1e-3, 0.2]"
+    cfg_str = "a: [1, 2, [1,2,3]]\n" + "b: [True, None, false, 1e2, 'hello', world]\n" + "c:\n" + "  d: [-1e-3, 0.2]"
 
     # config = "string:test\n"
     # config += "string2: \n"
@@ -403,4 +403,6 @@ if __name__ == "__main__":
     # config += "  string3:\n"
     # config += "    test:1\n"
     # config += "number: 1.0"
-    print(parse(cfg_str, base_path=Path("/home/robot/projects/mlconf/tests/test_confs")))
+    cfg = parse(cfg_str, base_path=Path("/home/robot/projects/mlconf/tests/test_confs"))
+    print(cfg)
+    breakpoint()

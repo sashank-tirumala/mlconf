@@ -73,7 +73,6 @@ class MLConfig:
         attrs = key.split(".")
         while len(attrs) > 1:
             if not isinstance(cur_cfg, MLConfig) or attrs[0] not in cur_cfg.__dict__:
-                logging.error(f"Key {key} not found in {cur_cfg}")
                 return None
             cur_cfg = getattr(cur_cfg, attrs.pop(0))
         if type(cur_cfg) is not MLConfig:
@@ -81,7 +80,6 @@ class MLConfig:
             return None
         else:
             if attrs[0] not in cur_cfg.__dict__:
-                logging.error(f"Key {key} not found in {cur_cfg}")
                 return None
             value = getattr(cur_cfg, attrs[0])
             if isinstance(value, MLConfig):
