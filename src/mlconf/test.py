@@ -5,4 +5,5 @@ if __name__ == "__main__":
     a = math.sqrt(2)
     print(a)
     b = Path("test.py").resolve()
+    dd = 1
     print("Hello, World!")
