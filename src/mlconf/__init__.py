@@ -1,1 +1,1 @@
-from mlconf.dictconfig import DictConfig as DictConfig
+from mlconf.config import Config as Config

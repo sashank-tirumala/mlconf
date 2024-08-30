@@ -1,6 +1,6 @@
 import pytest
 
-from mlconf import DictConfig
+from mlconf import Config
 
 
 @pytest.fixture
@@ -15,8 +15,8 @@ def config():
     }
 
 
-def test_access_dictconfig(config):
-    config = DictConfig(config)
+def test_access_Config(config):
+    config = Config(config)
     assert config.training.name == "MLConf"
     assert config.training.epochs == 10
     assert config.training.batch_size == 32
@@ -29,7 +29,7 @@ def test_access_dictconfig(config):
     assert config["training"].epochs == 10
     assert config["training"].batch_size == 32
     assert config["training"].learning_rate == 0.001
-    assert config["training"] == DictConfig(
+    assert config["training"] == Config(
         {"name": "MLConf", "epochs": 10, "batch_size": 32, "learning_rate": 0.001}
     )
     assert config.training["name"] == "MLConf"
@@ -39,8 +39,8 @@ def test_access_dictconfig(config):
 
 
 def test_equals(config):
-    config1 = DictConfig(config)
-    config2 = DictConfig(config)
+    config1 = Config(config)
+    config2 = Config(config)
     assert config1 == config2
     config2.training.name = "MLConf2"
     assert config1 != config2
@@ -53,8 +53,8 @@ def test_equals(config):
     assert config1 != config2
 
 
-def test_modify_dictconfig(config):
-    config1 = DictConfig(config)
+def test_modify_Config(config):
+    config1 = Config(config)
     config1.training.name = "MLConf2"
     assert config1.training.name == "MLConf2"
     config1["training"]["name"] = "MLConf3"
