@@ -98,3 +98,33 @@ def test_items(config):
         ("batch_size", 32),
         ("learning_rate", 0.001),
     ]
+
+
+def test_lists(config):
+    config = Config(config)
+    config["list"] = [1, 2, 3]
+    assert config.list == [1, 2, 3]
+
+    config["list"] = [1, {"a": 1}, 2]
+    assert config.list == [1, Config({"a": 1}), 2]
+
+    config["list"] = [1, [1, 2], 2]
+    assert config.list == [1, [1, 2], 2]
+
+    config["list"] = [1, [1, {"a": [1, 2, {"b": 3}]}, 2]]
+    assert config.list == [1, [1, Config({"a": [1, 2, Config({"b": 3})]}), 2]]
+
+
+def test_tuples(config):
+    config = Config(config)
+    config["tuple"] = (1, 2, 3)
+    assert config.tuple == (1, 2, 3)
+
+    config["tuple"] = (1, {"a": 1}, 2)
+    assert config.tuple == (1, Config({"a": 1}), 2)
+
+    config["tuple"] = (1, [1, 2], 2)
+    assert config.tuple == (1, [1, 2], 2)
+
+    config["tuple"] = (1, [1, {"a": [1, 2, {"b": 3}]}, 2])
+    assert config.tuple == (1, [1, Config({"a": [1, 2, Config({"b": 3})]}), 2])

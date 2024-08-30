@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 
 class Config:
@@ -6,10 +6,7 @@ class Config:
         self.__dict__["dict"] = {}
         for key, value in config.items():
             assert isinstance(key, str), "Key must be a string"
-            if isinstance(value, dict):
-                self.__setitem__(key, Config(value))
-            else:
-                self.__setitem__(key, value)
+            self.__setitem__(key, value)
 
     def __getitem__(self, key: str) -> Any:
         return self.dict[key]
@@ -20,8 +17,41 @@ class Config:
     def __setitem__(self, key: str, value: Any) -> None:
         if isinstance(value, dict):
             self.dict[key] = Config(value)
+        elif isinstance(value, List):
+            value = list(value)
+            value = self.resolve_list(value)
+            self.dict[key] = value
+        elif isinstance(value, tuple):
+            value = list(value)
+            value = self.resolve_tuple(value)
+            self.dict[key] = value
         else:
             self.dict[key] = value
+
+    def resolve_list(self, value: List[Any]) -> List[Any]:
+        for i, item in enumerate(value):
+            if isinstance(item, dict):
+                value[i] = Config(item)
+            elif isinstance(item, List):
+                value[i] = self.resolve_list(item)
+            elif isinstance(item, tuple):
+                value[i] = self.resolve_tuple(item)
+            else:
+                value[i] = item
+        return value
+
+    def resolve_tuple(self, value: Tuple[Any]) -> Tuple[Any]:
+        value_list = list(value)
+        for i, item in enumerate(value):
+            if isinstance(item, dict):
+                value_list[i] = Config(item)
+            elif isinstance(item, List):
+                value_list[i] = self.resolve_list(item)
+            elif isinstance(item, tuple):
+                value_list[i] = self.resolve_tuple(item)
+            else:
+                value_list[i] = item
+        return tuple(value_list)
 
     def __setattr__(self, key: str, value: Any) -> None:
         if key not in self.dict:
