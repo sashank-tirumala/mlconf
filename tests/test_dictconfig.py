@@ -128,3 +128,8 @@ def test_tuples(config):
 
     config["tuple"] = (1, [1, {"a": [1, 2, {"b": 3}]}, 2])
     assert config.tuple == (1, [1, Config({"a": [1, 2, Config({"b": 3})]}), 2])
+
+
+def test_len(config):
+    config = Config(config)
+    assert len(config) == 1

@@ -76,6 +76,9 @@ class Config:
     def __str__(self) -> str:
         return str(self.dict)
 
+    def __len__(self) -> int:
+        return len(self.dict)
+
     def keys(self) -> List[Any]:
         return list(self.dict.keys())
 
