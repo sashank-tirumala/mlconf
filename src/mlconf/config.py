@@ -1,3 +1,4 @@
+import copy
 from typing import Any, Dict, List, Tuple
 
 
@@ -7,6 +8,12 @@ class Config:
         for key, value in config.items():
             assert isinstance(key, str), "Key must be a string"
             self.__setitem__(key, value)
+
+    def __getstate__(self) -> Dict[str, Any]:
+        return {"dict": self.dict}
+
+    def __setstate__(self, state: Dict[str, Any]) -> None:
+        self.__dict__["dict"] = state["dict"]
 
     def __getitem__(self, key: str) -> Any:
         return self.dict[key]
@@ -84,3 +91,8 @@ class Config:
 
     def items(self) -> Any:
         return self.dict.items()
+
+    def __deepcopy__(self, memo: Dict[int, Any]) -> "Config":
+        new_instance = Config({})
+        new_instance.__dict__["dict"] = copy.deepcopy(self.dict, memo)
+        return new_instance

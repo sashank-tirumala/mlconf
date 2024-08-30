@@ -1,3 +1,5 @@
+from copy import deepcopy as copy
+
 import pytest
 
 from mlconf import Config
@@ -5,18 +7,19 @@ from mlconf import Config
 
 @pytest.fixture
 def config():
-    return {
-        "training": {
-            "name": "MLConf",
-            "epochs": 10,
-            "batch_size": 32,
-            "learning_rate": 0.001,
+    return Config(
+        {
+            "training": {
+                "name": "MLConf",
+                "epochs": 10,
+                "batch_size": 32,
+                "learning_rate": 0.001,
+            }
         }
-    }
+    )
 
 
 def test_access_Config(config):
-    config = Config(config)
     assert config.training.name == "MLConf"
     assert config.training.epochs == 10
     assert config.training.batch_size == 32
@@ -39,8 +42,8 @@ def test_access_Config(config):
 
 
 def test_equals(config):
-    config1 = Config(config)
-    config2 = Config(config)
+    config1 = copy(config)
+    config2 = copy(config)
     assert config1 == config2
     config2.training.name = "MLConf2"
     assert config1 != config2
@@ -54,22 +57,20 @@ def test_equals(config):
 
 
 def test_modify_Config(config):
-    config1 = Config(config)
-    config1.training.name = "MLConf2"
-    assert config1.training.name == "MLConf2"
-    config1["training"]["name"] = "MLConf3"
-    assert config1["training"].name == "MLConf3"
-    config1["training"] = {"name": "MLConf4"}
-    assert config1.training.name == "MLConf4"
-    config1.training["name2"] = "MLConf5"
-    assert config1.training.name2 == "MLConf5"
-    pytest.raises(AttributeError, config1.__setattr__, "abc", 123)
+    config.training.name = "MLConf2"
+    assert config.training.name == "MLConf2"
+    config["training"]["name"] = "MLConf3"
+    assert config["training"].name == "MLConf3"
+    config["training"] = {"name": "MLConf4"}
+    assert config.training.name == "MLConf4"
+    config.training["name2"] = "MLConf5"
+    assert config.training.name2 == "MLConf5"
+    pytest.raises(AttributeError, config.__setattr__, "abc", 123)
 
 
 def test_keys(config):
-    config1 = Config(config)
-    assert list(config1.keys()) == ["training"]
-    assert list(config1.training.keys()) == [
+    assert list(config.keys()) == ["training"]
+    assert list(config.training.keys()) == [
         "name",
         "epochs",
         "batch_size",
@@ -78,8 +79,8 @@ def test_keys(config):
 
 
 def test_items(config):
-    config1 = Config(config)
-    assert list(config1.items()) == [
+    config = Config(config)
+    assert list(config.items()) == [
         (
             "training",
             Config(
@@ -92,7 +93,7 @@ def test_items(config):
             ),
         )
     ]
-    assert list(config1.training.items()) == [
+    assert list(config.training.items()) == [
         ("name", "MLConf"),
         ("epochs", 10),
         ("batch_size", 32),
