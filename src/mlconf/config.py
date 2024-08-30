@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 
 class Config:
@@ -45,3 +45,9 @@ class Config:
 
     def __str__(self) -> str:
         return str(self.dict)
+
+    def keys(self) -> List[Any]:
+        return list(self.dict.keys())
+
+    def items(self) -> Any:
+        return self.dict.items()

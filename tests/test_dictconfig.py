@@ -64,3 +64,37 @@ def test_modify_Config(config):
     config1.training["name2"] = "MLConf5"
     assert config1.training.name2 == "MLConf5"
     pytest.raises(AttributeError, config1.__setattr__, "abc", 123)
+
+
+def test_keys(config):
+    config1 = Config(config)
+    assert list(config1.keys()) == ["training"]
+    assert list(config1.training.keys()) == [
+        "name",
+        "epochs",
+        "batch_size",
+        "learning_rate",
+    ]
+
+
+def test_items(config):
+    config1 = Config(config)
+    assert list(config1.items()) == [
+        (
+            "training",
+            Config(
+                {
+                    "name": "MLConf",
+                    "epochs": 10,
+                    "batch_size": 32,
+                    "learning_rate": 0.001,
+                }
+            ),
+        )
+    ]
+    assert list(config1.training.items()) == [
+        ("name", "MLConf"),
+        ("epochs", 10),
+        ("batch_size", 32),
+        ("learning_rate", 0.001),
+    ]
