@@ -1,42 +1,41 @@
 from typing import List
 
 
-class CharIdx:
-    def __init__(self, value: str, row: int, col: int) -> None:
-        self.row = row
-        self.col = col
-        self.value = value
+class CharStream:
+    def __init__(self, string: str) -> None:
+        self.lines = CharStream.get_lines(string)
+        self.row = 0
+        self.col = 0
 
-    def __repr__(self) -> str:
-        return f"CharIdx({self.row}, {self.col}, {self.value})"
+    @staticmethod
+    def get_lines(string: str) -> List[str]:
+        lines = string.split("\n")
+        for i, line in enumerate(lines):
+            lines[i] = line + "\n"
+        lines[-1] = lines[-1].rstrip("\n")
+        lines[-1] += "\0"
+        return lines
 
-    def __str__(self) -> str:
-        return f"CharIdx({self.row}, {self.col}, {self.value})"
+    def peek(self) -> str:
+        assert self.row < len(self.lines)
+        assert self.col < len(self.lines[self.row])
+        return self.lines[self.row][self.col]
 
+    def next(self) -> str:
+        if (
+            self.col == len(self.lines[self.row]) - 1
+            and self.row == len(self.lines) - 1
+        ):
+            return self.peek()
+        self.col += 1
+        if self.col < len(self.lines[self.row]):
+            return self.peek()
+        self.row += 1
+        self.col = 0
+        return self.peek()
 
-def get_lines(string: str) -> List[str]:
-    lines = string.split("\n")
-    for i, line in enumerate(lines):
-        lines[i] = line + "\n"
-    lines[-1] = lines[-1].rstrip("\n")
-    return lines
+    def is_eof(self) -> bool:
+        return self.peek() == "\0"
 
-
-def peek(lines: List[str], row: int, col: int) -> CharIdx:
-    assert row < len(lines)
-    assert col < len(lines[row])
-    return CharIdx(lines[row][col], row, col)
-
-
-def peek_next_value(lines: List[str], row: int, col: int) -> str:
-    next_char = next(lines, row, col)
-    return next_char.value
-
-
-def next(lines: List[str], row: int, col: int) -> CharIdx:
-    if col + 1 < len(lines[row]):
-        return CharIdx(lines[row][col + 1], row, col + 1)
-    elif row + 1 < len(lines):
-        return CharIdx(lines[row + 1][0], row + 1, 0)
-    else:
-        return CharIdx("\0", row, col)
+    def croak(self, message: str) -> None:
+        raise Exception(f"Error: {message} at row {self.row} and column {self.col}")
