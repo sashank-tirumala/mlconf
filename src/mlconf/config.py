@@ -48,7 +48,7 @@ class Config:
         return value
 
     def resolve_tuple(self, value: Tuple[Any]) -> Tuple[Any]:
-        value_list = list(value)
+        value_list: List[Any] = list(value)
         for i, item in enumerate(value):
             if isinstance(item, dict):
                 value_list[i] = Config(item)
