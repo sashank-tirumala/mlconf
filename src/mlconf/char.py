@@ -38,4 +38,6 @@ class CharStream:
         return self.peek() == "\0"
 
     def croak(self, message: str) -> None:
-        raise Exception(f"Error: {message} at row {self.row} and column {self.col}")
+        raise Exception(
+            f"Error: {self.row},{self.col} - {self.lines[self.row]}: {message}"
+        )
