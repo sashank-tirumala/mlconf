@@ -10,3 +10,15 @@ def simple_config_str():
         batch_size: 32
         learning_rate: 0.001
     """
+
+
+@pytest.fixture
+def simple_config_dict_str():
+    return {
+        "training": {
+            "name": "MLConf",
+            "epochs": "10",
+            "batch_size": "32",
+            "learning_rate": "0.001",
+        }
+    }

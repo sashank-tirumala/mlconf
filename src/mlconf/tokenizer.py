@@ -157,7 +157,7 @@ def replace_whitespace_with_indent_dedent_tokens(tokens: List[Token]) -> List[To
         if token.token_type == TokenType.WHITESPACE:
             top_token = white_space_tokens[-1]
             if int(token.value) > int(top_token.value):
-                res_tokens.append(Token(TokenType.INDENT, ""))
+                res_tokens.append(Token(TokenType.INDENT, "", token.line))
                 white_space_tokens.append(token)
             elif int(token.value) == int(top_token.value):
                 continue
@@ -169,21 +169,21 @@ def replace_whitespace_with_indent_dedent_tokens(tokens: List[Token]) -> List[To
                         raise IndentationError(
                             f"Error at line {token.line}: IndentationError, Indent does not match any outer indentation level"
                         )
-                    res_tokens.append(Token(TokenType.DEDENT, ""))
+                    res_tokens.append(Token(TokenType.DEDENT, "", token.line))
                     white_space_tokens.pop()
                     top_token = white_space_tokens[-1]
         else:
             res_tokens.append(token)
     while len(white_space_tokens) > 1:
         white_space_tokens.pop()
-        res_tokens.append(Token(TokenType.DEDENT, ""))
+        res_tokens.append(Token(TokenType.DEDENT, "", tokens[-1].line))
     return res_tokens
 
 
 class ParseTokenStream:
     def __init__(self, string: str):
-        self.tokens = get_tokens(string)
         self.lines = CharStream.get_lines(string)
+        self.tokens = get_tokens(string)
         self.idx = 0
 
     def peek(self) -> Token:
@@ -205,9 +205,4 @@ class ParseTokenStream:
 
     def croak(self, message: str) -> None:
         line = self.tokens[self.idx].line
-        line_str = self.lines[line]
-        raise Exception(f"Error at line {line}: {message}\n{line_str}")
-
-
-if __name__ == "__main__":
-    print(get_tokens("hello world"))
+        raise Exception(f"Error at line {line}: {message}\n{self.lines[line]}")

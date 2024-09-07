@@ -1,6 +1,6 @@
 from typing import List
 
-from mlconf.token import (
+from mlconf.tokenizer import (
     Token,
     TokenType,
     get_tokens,
