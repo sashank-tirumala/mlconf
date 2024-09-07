@@ -14,9 +14,10 @@ class TokenType(Enum):
 
 
 class Token:
-    def __init__(self, token_type: TokenType, value: str) -> None:
+    def __init__(self, token_type: TokenType, value: str, line: int = -1) -> None:
         self.token_type = token_type
         self.value = value
+        self.line = line
 
     def __str__(self) -> str:
         return f"Token({self.token_type}, {self.value})"
@@ -39,12 +40,12 @@ class TokenStream:
             ch = self.ch.peek()
             if ch == "\n":
                 self.ch.next()
-                return Token(TokenType.NEWLINE, "")
+                return Token(TokenType.NEWLINE, "", self.ch.row)
             elif ch == " ":
                 return self.get_whitespace()
             elif ch in "[]():,\"'-":
                 self.ch.next()
-                return Token(TokenType.PUNC, ch)
+                return Token(TokenType.PUNC, ch, self.ch.row)
             elif (
                 ch
                 in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*_+=<>?/\\|;."
@@ -52,7 +53,7 @@ class TokenStream:
                 return self.get_word()
             else:
                 self.ch.croak("Unknown character")
-        return Token(TokenType.EOF, "")
+        return Token(TokenType.EOF, "", self.ch.row + 1)
 
     def get_word(self) -> Token:
         word = ""
@@ -66,7 +67,7 @@ class TokenStream:
                 self.ch.next()
             else:
                 break
-        return Token(TokenType.WORD, word)
+        return Token(TokenType.WORD, word, self.ch.row)
 
     def get_whitespace(self) -> Token:
         whitespace = ""
@@ -77,7 +78,7 @@ class TokenStream:
                 self.ch.next()
             else:
                 break
-        return Token(TokenType.WHITESPACE, str(len(whitespace)))
+        return Token(TokenType.WHITESPACE, str(len(whitespace)), self.ch.row)
 
 
 def get_raw_tokens(string: str) -> List[Token]:
@@ -142,6 +143,35 @@ def filter_nonindent_whitespace_tokens(tokens: List[Token]) -> List[Token]:
             else:
                 invalid_idxs.append(i)
     return [token for i, token in enumerate(tokens) if i not in invalid_idxs]
+
+
+class ParseTokenStream:
+    def __init__(self, string: str):
+        self.tokens = get_tokens(string)
+        self.lines = CharStream.get_lines(string)
+        self.idx = 0
+
+    def peek(self) -> Token:
+        if self.is_eof():
+            return Token(TokenType.EOF, "")
+        return self.tokens[self.idx]
+
+    def next(self) -> None:
+        self.idx += 1
+
+    def peek_next(self) -> Token:
+        assert not self.is_eof()
+        if self.idx + 1 >= len(self.tokens):
+            return Token(TokenType.EOF, "")
+        return self.tokens[self.idx + 1]
+
+    def is_eof(self) -> bool:
+        return self.idx >= len(self.tokens)
+
+    def croak(self, message: str) -> None:
+        line = self.tokens[self.idx].line
+        line_str = self.lines[line]
+        raise Exception(f"Error at line {line}: {message}\n{line_str}")
 
 
 if __name__ == "__main__":
