@@ -10,7 +10,10 @@ class TokenType(Enum):
     PUNC = 3
     NEWLINE = 4
     WHITESPACE = 5
-    EOF = 6
+    INDENT = 6
+    DEDENT = 7
+    EOF = 8
+    ERROR = 9
 
 
 class Token:
@@ -95,6 +98,7 @@ def get_tokens(string: str) -> List[Token]:
     tokens = strip_eof_tokens(tokens)
     tokens = strip_newline_or_whitespace_tokens(tokens)
     tokens = filter_nonindent_whitespace_tokens(tokens)
+    tokens = replace_whitespace_with_indent_dedent_tokens(tokens)
     return tokens
 
 
@@ -143,6 +147,37 @@ def filter_nonindent_whitespace_tokens(tokens: List[Token]) -> List[Token]:
             else:
                 invalid_idxs.append(i)
     return [token for i, token in enumerate(tokens) if i not in invalid_idxs]
+
+
+def replace_whitespace_with_indent_dedent_tokens(tokens: List[Token]) -> List[Token]:
+    white_space_tokens: List[Token] = []
+    white_space_tokens.append(Token(TokenType.WHITESPACE, "0"))
+    res_tokens: List[Token] = []
+    for token in tokens:
+        if token.token_type == TokenType.WHITESPACE:
+            top_token = white_space_tokens[-1]
+            if int(token.value) > int(top_token.value):
+                res_tokens.append(Token(TokenType.INDENT, ""))
+                white_space_tokens.append(token)
+            elif int(token.value) == int(top_token.value):
+                continue
+            else:
+                while True:
+                    if int(token.value) == int(top_token.value):
+                        break
+                    if int(token.value) > int(top_token.value):
+                        raise IndentationError(
+                            f"Error at line {token.line}: IndentationError, Indent does not match any outer indentation level"
+                        )
+                    res_tokens.append(Token(TokenType.DEDENT, ""))
+                    white_space_tokens.pop()
+                    top_token = white_space_tokens[-1]
+        else:
+            res_tokens.append(token)
+    while len(white_space_tokens) > 1:
+        white_space_tokens.pop()
+        res_tokens.append(Token(TokenType.DEDENT, ""))
+    return res_tokens
 
 
 class ParseTokenStream:
