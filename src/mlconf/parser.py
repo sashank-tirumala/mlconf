@@ -33,7 +33,11 @@ def parse_block(
                     token = token_stream.peek()
                     if token.token_type == TokenType.INDENT:
                         token_stream.next()
-                        ast[key] = parse_block(token_stream, till_dedent=True)
+                        token = token_stream.peek()
+                        if token.token_type == TokenType.PUNC and token.value == "-":
+                            ast[key] = parse_yaml_list(token_stream)
+                        else:
+                            ast[key] = parse_block(token_stream, till_dedent=True)
                 else:
                     token_stream.croak(f"Expected WORD token, but got {token}")
             else:
@@ -54,6 +58,28 @@ def parse_block(
                 f"Expected WORD or NEWLINE token, but got {token.token_type}"
             )
     return ast
+
+
+def parse_yaml_list(token_stream: ParseTokenStream) -> List[Any]:
+    res: List[Any] = []
+    while not token_stream.is_eof():
+        token = token_stream.peek()
+        if token.token_type == TokenType.PUNC and token.value == "-":
+            token_stream.next()
+            next_token = token_stream.peek_next()
+            if next_token.token_type == TokenType.PUNC and next_token.value == ":":
+                res += [parse_block(token_stream)]
+                token_stream.next()
+            else:
+                res += [parse_inline_expression(token_stream)]
+                token_stream.next()
+        elif token.token_type == TokenType.NEWLINE:
+            token_stream.next()
+        elif token.token_type == TokenType.EOF or token.token_type == TokenType.DEDENT:
+            break
+        else:
+            token_stream.croak(f"Expected PUNC token, but got {token}")
+    return res
 
 
 def parse_inline_expression(token_stream: ParseTokenStream) -> Any:
