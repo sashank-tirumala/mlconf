@@ -68,8 +68,7 @@ def parse_yaml_list(token_stream: ParseTokenStream) -> List[Any]:
             token_stream.next()
             next_token = token_stream.peek_next()
             if next_token.token_type == TokenType.PUNC and next_token.value == ":":
-                res += [parse_block(token_stream)]
-                token_stream.next()
+                res += [parse_block(token_stream, till_dedent=True)]
             else:
                 res += [parse_inline_expression(token_stream)]
                 token_stream.next()

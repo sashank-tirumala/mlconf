@@ -47,3 +47,4 @@ def test_test1_config(test1_config_str):
             }
         ),
     ]
+    assert conf.a5 == "hello"
