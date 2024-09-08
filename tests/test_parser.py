@@ -36,6 +36,14 @@ def test_test1_config(test1_config_str):
         "x1",
         10.2,
         Config(
-            {"list": Config({"a": 1, "b": 2, "c": Config({"d": 3, "e": [1, 2, 3]})})}
+            {
+                "list": Config(
+                    {
+                        "a": 1,
+                        "b": 2,
+                        "c": Config({"d": 3, "e": [1, 2, 3, ["hello", "world"]]}),
+                    }
+                )
+            }
         ),
     ]
