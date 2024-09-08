@@ -22,7 +22,7 @@ class Config:
         return self.dict[key]
 
     def __setitem__(self, key: str, value: Any) -> None:
-        if isinstance(value, dict):
+        if isinstance(value, Dict):
             self.dict[key] = Config(value)
         elif isinstance(value, List):
             value = list(value)
@@ -37,7 +37,7 @@ class Config:
 
     def resolve_list(self, value: List[Any]) -> List[Any]:
         for i, item in enumerate(value):
-            if isinstance(item, dict):
+            if isinstance(item, Dict):
                 value[i] = Config(item)
             elif isinstance(item, List):
                 value[i] = self.resolve_list(item)
@@ -50,7 +50,7 @@ class Config:
     def resolve_tuple(self, value: Tuple[Any]) -> Tuple[Any]:
         value_list: List[Any] = list(value)
         for i, item in enumerate(value):
-            if isinstance(item, dict):
+            if isinstance(item, Dict):
                 value_list[i] = Config(item)
             elif isinstance(item, List):
                 value_list[i] = self.resolve_list(item)
@@ -61,9 +61,11 @@ class Config:
         return tuple(value_list)
 
     def __setattr__(self, key: str, value: Any) -> None:
-        if key not in self.dict:
+        if key == "dict":
+            self.__dict__["dict"] = value
+        elif key not in self.dict:
             raise AttributeError(f"'Config' object has no attribute '{key}'")
-        if isinstance(value, dict):
+        elif isinstance(value, Dict):
             self.dict[key] = Config(value)
         else:
             self.dict[key] = value
