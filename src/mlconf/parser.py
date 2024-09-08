@@ -1,8 +1,11 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from mlconf.config import Config
 from mlconf.resolver import PythonDataTypeResolver, resolve
-from mlconf.tokenizer import ParseTokenStream, TokenType
+from mlconf.tokenizer import ParseTokenStream, Token, TokenType
+
+INLINE_LIST_DELIMITER = Token(TokenType.PUNC, "]")
+INLINE_LIST_SEPARATOR = Token(TokenType.PUNC, ",")
 
 
 def parse_block(
@@ -59,32 +62,49 @@ def parse_inline_expression(token_stream: ParseTokenStream) -> Any:
         token = token_stream.peek()
         if token.token_type == TokenType.WORD:
             res += token.value
-            token_stream.next()
-            if (
-                token_stream.peek().token_type == TokenType.PUNC
-                and token_stream.peek().value == "."
-            ):
-                res += "."
-                token_stream.next()
-                continue
-            elif (
-                token_stream.peek().token_type == TokenType.NEWLINE
-                or token_stream.peek().token_type == TokenType.EOF
-                or token_stream.peek().token_type == TokenType.DEDENT
-            ):
-                break
-            else:
-                token_stream.croak("Invalid Syntax")
+            break
         elif token.token_type == TokenType.PUNC and token.value == "-":
             res += token.value
             token_stream.next()
         elif token.token_type == TokenType.STRING:
             res += token.value
+            break
+        elif token.token_type == TokenType.PUNC and token.value == "[":
             token_stream.next()
+            return parse_list(
+                token_stream, INLINE_LIST_DELIMITER, INLINE_LIST_SEPARATOR
+            )
         elif token.token_type in [TokenType.NEWLINE, TokenType.EOF, TokenType.DEDENT]:
             break
         else:
             token_stream.croak(f"Expected WORD or PUNC token, but got {token}")
+    return res
+
+
+def parse_list(
+    token_stream: ParseTokenStream, delimiter: Token, separator: Token
+) -> List[Any]:
+    res: List[Any] = []
+    delimited = False
+    while not token_stream.is_eof():
+        token = token_stream.peek()
+        res += [parse_inline_expression(token_stream)]
+        token_stream.next()
+        token = token_stream.peek()
+        if token.token_type == delimiter.token_type and token.value == delimiter.value:
+            delimited = True
+            break
+        elif (
+            token.token_type == separator.token_type and token.value == separator.value
+        ):
+            token_stream.next()
+            continue
+        else:
+            token_stream.croak(
+                f"Expected '{delimiter.value}' or '{separator.value}' but got '{token.value}'"
+            )
+    if not delimited:
+        token_stream.croak(f"Expected '{delimiter.value}', but got EOF")
     return res
 
 

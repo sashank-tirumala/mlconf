@@ -48,7 +48,7 @@ class TokenStream:
             elif ch == "\n":
                 self.indentation_handled = False
                 self.ch.next()
-                return Token(TokenType.NEWLINE, "", self.ch.row)
+                return Token(TokenType.NEWLINE, "NEWLINE", self.ch.row)
             elif ch == " ":
                 self.ch.next()
                 continue
