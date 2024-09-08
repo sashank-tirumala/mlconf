@@ -52,4 +52,6 @@ def parse_block(
 def parse(string: str) -> Config:
     parse_token_stream = ParseTokenStream(string)
     ast = parse_block(parse_token_stream, till_dedent=False)
-    return Config(ast)
+    config = Config(ast)
+    # config = NumberResolver().resolve(config = config)
+    return config
