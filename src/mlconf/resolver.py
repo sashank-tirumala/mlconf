@@ -15,13 +15,17 @@ class Resolver(ABC):
         pass
 
 
-class NumberResolver(Resolver):
+class PythonDataTypeResolver(Resolver):
     def resolve(self, value: str) -> Any:
         if isinstance(value, str):
             if re.match(REGEX_INT_MATCH, value):
                 return int(value)
             elif re.match(REGEX_FLOAT_MATCH, value):
                 return float(value)
+            elif value.lower() == "true":
+                return True
+            elif value.lower() == "false":
+                return False
             else:
                 return value
         else:
