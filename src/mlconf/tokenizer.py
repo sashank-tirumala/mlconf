@@ -52,9 +52,13 @@ class TokenStream:
             elif ch == " ":
                 self.ch.next()
                 continue
-            elif ch in "[]():,\"'-":
+            elif ch in "[]():,-":
                 self.ch.next()
                 return Token(TokenType.PUNC, ch, self.ch.row)
+            elif ch == "#":
+                while not self.ch.is_eof() and self.ch.peek() != "\n":
+                    self.ch.next()
+                continue
             elif (
                 ch
                 in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*_+=<>?/\\|;."
