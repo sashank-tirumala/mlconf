@@ -26,5 +26,6 @@ def test_test1_config(test1_config_str):
     assert conf.a1.b4.c7
     assert not conf.a1.b5
     assert not conf.a1.b6
-    assert conf.a1.a2 == 2
-    assert conf.a1.a3 == 3
+    assert conf.a2 == 2
+    assert conf.a3 == 3
+    # assert conf.a4.b7.c8.d5 == "brave new world"

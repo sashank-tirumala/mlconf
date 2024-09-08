@@ -42,7 +42,7 @@ def parse_block(
             if till_dedent:
                 token_stream.next()
                 break
-            token_stream.croak("Unexpected Dedent")
+            token_stream.next()
         elif token.token_type == TokenType.EOF:
             break
         else:
@@ -81,6 +81,8 @@ def parse_inline_expression(token_stream: ParseTokenStream) -> Any:
             token_stream.next()
             res += parse_string(token_stream)
             token_stream.next()
+        elif token.token_type in [TokenType.NEWLINE, TokenType.EOF, TokenType.DEDENT]:
+            break
         else:
             token_stream.croak(f"Expected WORD or PUNC token, but got {token}")
     return res
@@ -92,6 +94,8 @@ def parse_string(token_stream: ParseTokenStream) -> str:
         token = token_stream.peek()
         if token.token_type == TokenType.PUNC and token.value == '"':
             break
+        if token.token_type in [TokenType.EOF, TokenType.NEWLINE, TokenType.DEDENT]:
+            token_stream.croak(f"Unexpected {token.token_type}")
         res += str(token.value)
         token_stream.next()
     return res

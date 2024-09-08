@@ -10,10 +10,10 @@ class TokenType(Enum):
     PUNC = 3
     NEWLINE = 4
     WHITESPACE = 5
-    INDENT = 6
-    DEDENT = 7
-    EOF = 8
-    ERROR = 9
+    WHITESPACE_INDENT = 6
+    INDENT = 7
+    DEDENT = 8
+    EOF = 9
 
 
 class Token:
@@ -37,15 +37,21 @@ class Token:
 class TokenStream:
     def __init__(self, charstream: CharStream):
         self.ch = charstream
+        self.indentation_handled = False
 
     def get_next(self) -> Token:
         while not self.ch.is_eof():
             ch = self.ch.peek()
-            if ch == "\n":
+            if self.ch.col == 0 and not self.indentation_handled:
+                self.indentation_handled = True
+                return self.get_indent()
+            elif ch == "\n":
+                self.indentation_handled = False
                 self.ch.next()
                 return Token(TokenType.NEWLINE, "", self.ch.row)
             elif ch == " ":
-                return self.get_whitespace()
+                self.ch.next()
+                continue
             elif ch in "[]():,\"'-":
                 self.ch.next()
                 return Token(TokenType.PUNC, ch, self.ch.row)
@@ -83,6 +89,17 @@ class TokenStream:
                 break
         return Token(TokenType.WHITESPACE, str(len(whitespace)), self.ch.row)
 
+    def get_indent(self) -> Token:
+        indent = ""
+        while not self.ch.is_eof():
+            ch = self.ch.peek()
+            if ch == " ":
+                indent += ch
+                self.ch.next()
+            else:
+                break
+        return Token(TokenType.WHITESPACE_INDENT, str(len(indent)), self.ch.row)
+
 
 def get_raw_tokens(string: str) -> List[Token]:
     charstream = CharStream(string)
@@ -96,9 +113,8 @@ def get_raw_tokens(string: str) -> List[Token]:
 def get_tokens(string: str) -> List[Token]:
     tokens = get_raw_tokens(string)
     tokens = strip_eof_tokens(tokens)
-    tokens = strip_newline_or_whitespace_tokens(tokens)
-    tokens = filter_nonindent_whitespace_tokens(tokens)
     tokens = replace_whitespace_with_indent_dedent_tokens(tokens)
+    tokens = strip_indent_tokens(tokens)
     return tokens
 
 
@@ -108,34 +124,50 @@ def strip_eof_tokens(tokens: List[Token]) -> List[Token]:
     return tokens
 
 
-def strip_newline_or_whitespace_tokens(tokens: List[Token]) -> List[Token]:
-    tokens = strip_newline_or_whitespace_front(tokens)
-    tokens = strip_newline_or_whitespace_back(tokens)
+def strip_indent_dedent_tokens(tokens: List[Token]) -> List[Token]:
+    if tokens[-1].token_type == TokenType.DEDENT:
+        tokens = tokens[:-1]
+    if tokens[0].token_type == TokenType.INDENT:
+        tokens = tokens[1:]
     return tokens
 
 
-def strip_newline_or_whitespace_front(tokens: List[Token]) -> List[Token]:
+def strip_newline_or_indent_tokens(tokens: List[Token]) -> List[Token]:
+    tokens = strip_indent_tokens(tokens)
+    return tokens
+
+
+def strip_newline_tokens(tokens: List[Token]) -> List[Token]:
+    res_tokens: List[Token] = []
+    encountered_word = False
+    for token in tokens:
+        if token.token_type == TokenType.NEWLINE and not encountered_word:
+            continue
+        if token.token_type == TokenType.WORD or token.token_type == TokenType.PUNC:
+            encountered_word = True
+        res_tokens.append(token)
+    encountered_word = False
+    for token in reversed(res_tokens):
+        if token.token_type == TokenType.NEWLINE:
+            res_tokens.remove(token)
+        if token.token_type == TokenType.WORD or token.token_type == TokenType.PUNC:
+            encountered_word = True
+            break
+    return res_tokens
+
+
+def strip_indent_tokens(tokens: List[Token]) -> List[Token]:
+    res_tokens: List[Token] = []
+    encountered_word = False
     count = 0
     for token in tokens:
-        if token.token_type == TokenType.NEWLINE:
+        if token.token_type == TokenType.INDENT and not encountered_word:
             count += 1
-        elif token.token_type == TokenType.WHITESPACE:
-            count += 1
-        else:
-            break
-    return tokens[count:]
-
-
-def strip_newline_or_whitespace_back(tokens: List[Token]) -> List[Token]:
-    count = 0
-    for token in reversed(tokens):
-        if token.token_type == TokenType.NEWLINE:
-            count += 1
-        elif token.token_type == TokenType.WHITESPACE:
-            count += 1
-        else:
-            break
-    return tokens[: len(tokens) - count]
+            continue
+        elif token.token_type == TokenType.WORD or token.token_type == TokenType.PUNC:
+            encountered_word = True
+        res_tokens.append(token)
+    return res_tokens
 
 
 def filter_nonindent_whitespace_tokens(tokens: List[Token]) -> List[Token]:
@@ -151,10 +183,10 @@ def filter_nonindent_whitespace_tokens(tokens: List[Token]) -> List[Token]:
 
 def replace_whitespace_with_indent_dedent_tokens(tokens: List[Token]) -> List[Token]:
     white_space_tokens: List[Token] = []
-    white_space_tokens.append(Token(TokenType.WHITESPACE, "0"))
+    white_space_tokens.append(Token(TokenType.WHITESPACE_INDENT, "0"))
     res_tokens: List[Token] = []
-    for token in tokens:
-        if token.token_type == TokenType.WHITESPACE:
+    for i, token in enumerate(tokens):
+        if token.token_type == TokenType.WHITESPACE_INDENT:
             top_token = white_space_tokens[-1]
             if int(token.value) > int(top_token.value):
                 res_tokens.append(Token(TokenType.INDENT, "", token.line))
