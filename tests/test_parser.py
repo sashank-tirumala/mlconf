@@ -22,6 +22,7 @@ def test_test1_config(test1_config_str):
     assert conf.a1.b4.c5.d3.e1 == "world"
     assert conf.a1.b4.c5.d3.e2 == 2
     assert conf.a1.b4.c5.d4 == [12, "hello", "world", [1, [1.1, "base"], 3]]
+    assert conf.a1.b4.c5.d5 == (1, 2, (3, 4), 5)
     assert conf.a1.b4.c6
     assert conf.a1.b4.c7
     assert not conf.a1.b5

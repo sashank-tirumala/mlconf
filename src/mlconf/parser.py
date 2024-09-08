@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from mlconf.config import Config
 from mlconf.resolver import PythonDataTypeResolver, resolve
@@ -74,6 +74,9 @@ def parse_inline_expression(token_stream: ParseTokenStream) -> Any:
             return parse_list(
                 token_stream, INLINE_LIST_DELIMITER, INLINE_LIST_SEPARATOR
             )
+        elif token.token_type == TokenType.PUNC and token.value == "(":
+            token_stream.next()
+            return parse_tuple(token_stream)
         elif token.token_type in [TokenType.NEWLINE, TokenType.EOF, TokenType.DEDENT]:
             break
         else:
@@ -106,6 +109,14 @@ def parse_list(
     if not delimited:
         token_stream.croak(f"Expected '{delimiter.value}', but got EOF")
     return res
+
+
+def parse_tuple(token_stream: ParseTokenStream) -> Tuple[Any]:
+    res = parse_list(
+        token_stream, Token(TokenType.PUNC, ")"), Token(TokenType.PUNC, ",")
+    )
+    res_tuple = tuple(res)
+    return res_tuple
 
 
 def parse(string: str) -> Config:
