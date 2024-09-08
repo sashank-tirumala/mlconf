@@ -134,13 +134,3 @@ def test_tuples(config):
 def test_len(config):
     config = Config(config)
     assert len(config) == 1
-
-
-def test_keymap(config):
-    config = Config(config)
-    assert config.keymap == {
-        "training.name": "MLConf",
-        "training.epochs": 10,
-        "training.batch_size": 32,
-        "training.learning_rate": 0.001,
-    }

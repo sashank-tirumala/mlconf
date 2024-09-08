@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 from mlconf.config import Config
+from mlconf.resolver import NumberResolver, resolve
 from mlconf.tokenizer import ParseTokenStream, TokenType
 
 
@@ -53,5 +54,5 @@ def parse(string: str) -> Config:
     parse_token_stream = ParseTokenStream(string)
     ast = parse_block(parse_token_stream, till_dedent=False)
     config = Config(ast)
-    # config = NumberResolver().resolve(config = config)
+    config = resolve(config, [NumberResolver()])
     return config
