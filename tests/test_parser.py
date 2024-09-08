@@ -13,8 +13,8 @@ def test_test1_config(test1_config_str):
     conf = parse(test1_config_str)
     assert conf.a1.b1.c1 == 122
     assert conf.a1.b1.c2 == 2.01
-    assert conf.a1.b2 == 2.11
-    assert conf.a1.b3 == +0.01
+    assert conf.a1.b2 == -2.11
+    assert conf.a1.b3 == 0.01
     assert conf.a1.b4.c3 == 3.0
     assert conf.a1.b4.c4 == "hello"
     assert conf.a1.b4.c5.d1 == 1

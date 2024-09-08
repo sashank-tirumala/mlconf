@@ -18,9 +18,11 @@ def parse_block(
             if token.token_type == TokenType.PUNC and token.value == ":":
                 token_stream.next()
                 token = token_stream.peek()
-                if token.token_type == TokenType.WORD:
-                    value = token.value
-                    ast[key] = value
+                if (
+                    token.token_type == TokenType.WORD
+                    or token.token_type == TokenType.PUNC
+                ):
+                    ast[key] = parse_inline_expression(token_stream)
                     token_stream.next()
                 elif token.token_type == TokenType.NEWLINE:
                     token_stream.next()
@@ -48,6 +50,27 @@ def parse_block(
                 f"Expected WORD or NEWLINE token, but got {token.token_type}"
             )
     return ast
+
+
+def parse_inline_expression(token_stream: ParseTokenStream) -> Any:
+    res = ""
+    while not token_stream.is_eof():
+        token = token_stream.peek()
+        if token.token_type == TokenType.WORD:
+            res += token.value
+            token_stream.next()
+        elif token.token_type == TokenType.PUNC and token.value == "-":
+            res += token.value
+            token_stream.next()
+        elif token.token_type == TokenType.NEWLINE:
+            break
+        elif token.token_type == TokenType.EOF:
+            break
+        elif token.token_type == TokenType.DEDENT:
+            break
+        else:
+            token_stream.croak(f"Expected WORD or PUNC token, but got {token}")
+    return res
 
 
 def parse(string: str) -> Config:
