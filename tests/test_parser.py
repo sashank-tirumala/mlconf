@@ -28,4 +28,5 @@ def test_test1_config(test1_config_str):
     assert not conf.a1.b6
     assert conf.a2 == 2
     assert conf.a3 == 3
-    # assert conf.a4.b7.c8.d5 == "brave new world"
+    assert conf.a4.b7.c8.d5 == "brave new world~!@#$%^&*()_+=-`[]{}|;':,.<>?/\\"
+    assert conf.a4.b7.c8.d6 == 'brave new world~!@#$%^&*()_+=-`[]{}|;":,.<>?/\\'

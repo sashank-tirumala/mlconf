@@ -59,6 +59,10 @@ class TokenStream:
                 while not self.ch.is_eof() and self.ch.peek() != "\n":
                     self.ch.next()
                 continue
+            elif ch == '"' or ch == "'":
+                string_token = self.get_string(delimiter=ch)
+                self.ch.next()
+                return string_token
             elif (
                 ch
                 in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*_+=<>?/\\|;."
@@ -81,6 +85,19 @@ class TokenStream:
             else:
                 break
         return Token(TokenType.WORD, word, self.ch.row)
+
+    def get_string(self, delimiter: str) -> Token:
+        string = ""
+        delimited = False
+        while not self.ch.is_eof():
+            ch = self.ch.next()
+            if ch == delimiter:
+                delimited = True
+                break
+            string += ch
+        if not delimited:
+            self.ch.croak("Unterminated string")
+        return Token(TokenType.STRING, string, self.ch.row)
 
     def get_whitespace(self) -> Token:
         whitespace = ""
