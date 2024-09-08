@@ -59,17 +59,41 @@ def parse_inline_expression(token_stream: ParseTokenStream) -> Any:
         if token.token_type == TokenType.WORD:
             res += token.value
             token_stream.next()
+            if (
+                token_stream.peek().token_type == TokenType.PUNC
+                and token_stream.peek().value == "."
+            ):
+                res += "."
+                token_stream.next()
+                continue
+            elif (
+                token_stream.peek().token_type == TokenType.NEWLINE
+                or token_stream.peek().token_type == TokenType.EOF
+                or token_stream.peek().token_type == TokenType.DEDENT
+            ):
+                break
+            else:
+                token_stream.croak("Invalid Syntax")
         elif token.token_type == TokenType.PUNC and token.value == "-":
             res += token.value
             token_stream.next()
-        elif token.token_type == TokenType.NEWLINE:
-            break
-        elif token.token_type == TokenType.EOF:
-            break
-        elif token.token_type == TokenType.DEDENT:
-            break
+        elif token.token_type == TokenType.PUNC and token.value == '"':
+            token_stream.next()
+            res += parse_string(token_stream)
+            token_stream.next()
         else:
             token_stream.croak(f"Expected WORD or PUNC token, but got {token}")
+    return res
+
+
+def parse_string(token_stream: ParseTokenStream) -> str:
+    res = ""
+    while not token_stream.is_eof():
+        token = token_stream.peek()
+        if token.token_type == TokenType.PUNC and token.value == '"':
+            break
+        res += str(token.value)
+        token_stream.next()
     return res
 
 
