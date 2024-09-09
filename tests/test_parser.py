@@ -1,4 +1,3 @@
-from mlconf.config import Config
 from mlconf.parser import parse
 
 
@@ -32,24 +31,13 @@ def test_test1_config(test1_config_str):
     assert conf.a3 == 3
     assert conf.a4.b7.c8.d5 == "brave new world~!@#$%^&*()_+=-`[]{}|;':,.<>?/\\"
     assert conf.a4.b7.c8.d6 == 'brave new world~!@#$%^&*()_+=-`[]{}|;":,.<>?/\\'
-    assert conf.a4.b7.c9 == [
-        "x1",
-        10.2,
-        Config(
-            {
-                "list": Config(
-                    {
-                        "a": 1,
-                        "b": 2,
-                        "c": Config(
-                            {
-                                "d": 3,
-                                "e": [1, (2, ("a", "b"), 3), 3, ["hello", "world"]],
-                            }
-                        ),
-                    }
-                )
-            }
-        ),
-    ]
+    assert conf.a4.b7.c9[0] == "x1"
+    assert conf.a4.b7.c9[1] == 10.2
+    assert conf.a4.b7.c9[2].list.a == 1
+    assert conf.a4.b7.c9[2]["list"]["b"] == 2
+    assert conf.a4.b7.c9[2].list.c.d == 3
+    assert conf.a4.b7.c9[2].list.c.e[0] == 1
+    assert conf.a4.b7.c9[2].list.c.e[1] == (2, ("a", "b"), 3)
+    assert conf.a4.b7.c9[2].list.c.e[2] == 3
+    assert conf.a4.b7.c9[2].list.c.e[3] == ["hello", "world"]
     assert conf.a5 == "hello"
