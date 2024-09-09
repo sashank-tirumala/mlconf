@@ -33,6 +33,7 @@ def test_test1_config(test1_config_str):
     assert conf.a4.b7.c8.d6 == 'brave new world~!@#$%^&*()_+=-`[]{}|;":,.<>?/\\'
     assert conf.a4.b7.c9[0] == "x1"
     assert conf.a4.b7.c9[1] == 10.2
+    assert "list" in conf.a4.b7.c9[2]
     assert conf.a4.b7.c9[2].list.a == 1
     assert conf.a4.b7.c9[2]["list"]["b"] == 2
     assert conf.a4.b7.c9[2].list.c.d == 3

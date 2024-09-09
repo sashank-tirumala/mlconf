@@ -88,6 +88,9 @@ class Config:
     def items(self) -> Any:
         return self.dict.items()
 
+    def __contains__(self, key: str) -> bool:
+        return key in self.dict
+
     def __deepcopy__(self, memo: Dict[int, Any]) -> "Config":
         new_instance = Config({})
         new_instance.__dict__["dict"] = copy.deepcopy(self.dict, memo)
