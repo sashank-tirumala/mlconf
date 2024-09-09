@@ -41,7 +41,12 @@ def test_test1_config(test1_config_str):
                     {
                         "a": 1,
                         "b": 2,
-                        "c": Config({"d": 3, "e": [1, 2, 3, ["hello", "world"]]}),
+                        "c": Config(
+                            {
+                                "d": 3,
+                                "e": [1, (2, ("a", "b"), 3), 3, ["hello", "world"]],
+                            }
+                        ),
                     }
                 )
             }
