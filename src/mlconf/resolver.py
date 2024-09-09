@@ -22,10 +22,12 @@ class PythonDataTypeResolver(Resolver):
                 return int(value)
             elif re.match(REGEX_FLOAT_MATCH, value):
                 return float(value)
-            elif value.lower() == "true":
+            elif value == "true" or value == "True":
                 return True
-            elif value.lower() == "false":
+            elif value == "false" or value == "False":
                 return False
+            elif value.lower() == "none" or value.lower() == "null" or value == "Null":
+                return None
             else:
                 return value
         else:

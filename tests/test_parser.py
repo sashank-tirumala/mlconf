@@ -17,8 +17,8 @@ def test_test1_config(test1_config_str):
     assert conf.a1.b3 == 0.01
     assert conf.a1.b4.c3 == 3.0
     assert conf.a1.b4.c4 == "hello"
-    assert conf.a1.b4.c5.d1 == 1
-    assert conf.a1.b4.c5.d2 == 2
+    assert conf.a1.b4.c5.d1 is None
+    assert conf.a1.b4.c5.d2 is None
     assert conf.a1.b4.c5.d3.e1 == "world"
     assert conf.a1.b4.c5.d3.e2 == 2
     assert conf.a1.b4.c5.d4 == [12, "hello", "world", [1, [1.1, "base"], 3]]
