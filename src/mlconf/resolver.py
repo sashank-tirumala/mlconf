@@ -4,6 +4,7 @@ from typing import Any, List, Tuple
 
 from mlconf.config import Config
 from mlconf.regex_utils import REGEX_FLOAT_MATCH, REGEX_INT_MATCH
+from mlconf.word import Word
 
 
 class Resolver(ABC):
@@ -11,25 +12,33 @@ class Resolver(ABC):
         pass
 
     @abstractmethod
-    def resolve(self, value: str) -> Any:
+    def resolve(self, value: Word) -> Any:
         pass
 
 
 class PythonDataTypeResolver(Resolver):
-    def resolve(self, value: str) -> Any:
-        if isinstance(value, str):
-            if re.match(REGEX_INT_MATCH, value):
-                return int(value)
-            elif re.match(REGEX_FLOAT_MATCH, value):
-                return float(value)
-            elif value == "true" or value == "True":
+    def resolve(self, value: Word) -> Any:
+        if isinstance(value, Word):
+            if re.match(REGEX_INT_MATCH, value.text):
+                return int(value.text)
+            elif re.match(REGEX_FLOAT_MATCH, value.text):
+                return float(value.text)
+            elif value.text == "true" or value.text == "True":
                 return True
-            elif value == "false" or value == "False":
+            elif value.text == "false" or value.text == "False":
                 return False
-            elif value.lower() == "none" or value.lower() == "null" or value == "Null":
+            elif value.text == "none" or value.text == "null" or value.text == "None":
                 return None
             else:
                 return value
+        else:
+            return value
+
+
+class StringResolver(Resolver):
+    def resolve(self, value: Word) -> Any:
+        if isinstance(value, Word):
+            return str(value)
         else:
             return value
 
@@ -44,7 +53,8 @@ def resolve(config: Config, resolvers: List[Resolver]) -> Any:
             config[key] = resolve_tuple(value, resolvers)
         else:
             for resolver in resolvers:
-                config.dict[key] = resolver.resolve(value)
+                value = resolver.resolve(value)
+            config[key] = value
     return config
 
 
@@ -58,7 +68,8 @@ def resolve_list(value: List[Any], resolvers: List[Resolver]) -> List[Any]:
             value[i] = resolve_tuple(item, resolvers)
         else:
             for resolver in resolvers:
-                value[i] = resolver.resolve(item)
+                item = resolver.resolve(item)
+            value[i] = item
     return value
 
 
@@ -73,5 +84,6 @@ def resolve_tuple(value: Tuple[Any], resolvers: List[Resolver]) -> Tuple[Any]:
             value_list[i] = resolve_tuple(item, resolvers)
         else:
             for resolver in resolvers:
-                value_list[i] = resolver.resolve(item)
+                item = resolver.resolve(item)
+            value_list[i] = item
     return tuple(value_list)

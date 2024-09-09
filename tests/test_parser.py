@@ -41,4 +41,4 @@ def test_test1_config(test1_config_str):
     assert conf.a4.b7.c9[2].list.c.e[1] == (2, ("a", "b"), 3)
     assert conf.a4.b7.c9[2].list.c.e[2] == 3
     assert conf.a4.b7.c9[2].list.c.e[3] == ["hello", "world"]
-    assert conf.a5 == "hello"
+    assert conf.a5 == "True"

@@ -1,8 +1,9 @@
 from typing import Any, Dict, List, Tuple
 
 from mlconf.config import Config
-from mlconf.resolver import PythonDataTypeResolver, resolve
+from mlconf.resolver import PythonDataTypeResolver, StringResolver, resolve
 from mlconf.tokenizer import ParseTokenStream, Token, TokenType
+from mlconf.word import Word
 
 INLINE_LIST_DELIMITER = Token(TokenType.PUNC, "]")
 INLINE_LIST_SEPARATOR = Token(TokenType.PUNC, ",")
@@ -83,12 +84,15 @@ def parse_yaml_list(token_stream: ParseTokenStream) -> List[Any]:
 
 def parse_inline_expression(token_stream: ParseTokenStream) -> Any:
     res = ""
+    is_word = False
     while not token_stream.is_eof():
         token = token_stream.peek()
         if token.token_type == TokenType.WORD:
+            is_word = True
             res += token.value
             break
         elif token.token_type == TokenType.PUNC and token.value == "-":
+            is_word = True
             res += token.value
             token_stream.next()
         elif token.token_type == TokenType.STRING:
@@ -106,6 +110,8 @@ def parse_inline_expression(token_stream: ParseTokenStream) -> Any:
             break
         else:
             token_stream.croak(f"Expected WORD or PUNC token, but got {token}")
+    if is_word:
+        return Word(res)
     return res
 
 
@@ -148,5 +154,5 @@ def parse(string: str) -> Config:
     parse_token_stream = ParseTokenStream(string)
     ast = parse_block(parse_token_stream, till_dedent=False)
     config = Config(ast)
-    config = resolve(config, [PythonDataTypeResolver()])
+    config = resolve(config, [PythonDataTypeResolver(), StringResolver()])
     return config
