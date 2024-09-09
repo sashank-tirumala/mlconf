@@ -1,3 +1,4 @@
+import os
 import re
 from abc import ABC, abstractmethod
 from typing import Any, List, Tuple
@@ -29,6 +30,17 @@ class PythonDataTypeResolver(Resolver):
                 return False
             elif value.text == "none" or value.text == "null" or value.text == "None":
                 return None
+            else:
+                return value
+        else:
+            return value
+
+
+class EnvironmentVariableResolver(Resolver):
+    def resolve(self, value: Word) -> Any:
+        if isinstance(value, Word):
+            if value.text.startswith("$") and value.text[1:] in os.environ:
+                return os.environ[value.text[1:]]
             else:
                 return value
         else:

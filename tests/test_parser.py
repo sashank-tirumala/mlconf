@@ -1,3 +1,5 @@
+import os
+
 from mlconf.parser import parse
 
 
@@ -42,3 +44,5 @@ def test_test1_config(test1_config_str):
     assert conf.a4.b7.c9[2].list.c.e[2] == 3
     assert conf.a4.b7.c9[2].list.c.e[3] == ["hello", "world"]
     assert conf.a5 == "True"
+    assert conf.a6 == "$123"
+    assert conf.a7 == os.environ["HOME"]
