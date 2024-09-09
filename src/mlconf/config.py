@@ -9,12 +9,6 @@ class Config:
             assert isinstance(key, str), "Key must be a string"
             self.__setitem__(key, value)
 
-    def __getstate__(self) -> Dict[str, Any]:
-        return {"dict": self.dict}
-
-    def __setstate__(self, state: Dict[str, Any]) -> None:
-        self.__dict__["dict"] = state["dict"]
-
     def __getitem__(self, key: str) -> Any:
         return self.dict[key]
 
