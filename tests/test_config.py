@@ -19,7 +19,7 @@ def config():
     )
 
 
-def test_access_Config(config):
+def test_access_Config(config: Config):
     assert config.training.name == "MLConf"
     assert config.training.epochs == 10
     assert config.training.batch_size == 32
@@ -39,6 +39,12 @@ def test_access_Config(config):
     assert config.training["epochs"] == 10
     assert config.training["batch_size"] == 32
     assert config.training["learning_rate"] == 0.001
+    assert config.get_item_from_dot_notation("training.name") == "MLConf"
+    assert config.get_item_from_dot_notation("training.epochs") == 10
+    assert config.get_item_from_dot_notation("training.batch_size") == 32
+    assert config.get_item_from_dot_notation("training.learning_rate") == 0.001
+    assert config.get_item_from_dot_notation("training")["name"] == "MLConf"
+    assert config.get_item_from_dot_notation("training").name == "MLConf"
 
 
 def test_equals(config):

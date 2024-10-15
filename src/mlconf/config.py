@@ -95,3 +95,12 @@ class Config:
         new_instance = Config({})
         new_instance.__dict__["dict"] = copy.deepcopy(self.dict, memo)
         return new_instance
+
+    def get_item_from_dot_notation(self, item: str) -> Any:
+        keys = item.split(".")
+        value = self.dict
+        for key in keys:
+            if key not in value:
+                raise KeyError(f"'{item}' not found in config")
+            value = value[key]
+        return value
