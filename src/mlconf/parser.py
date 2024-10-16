@@ -1,12 +1,7 @@
 from typing import Any, Dict, List, Tuple
 
 from mlconf.config import Config
-from mlconf.resolver import (
-    EnvironmentVariableResolver,
-    PythonDataTypeResolver,
-    StringResolver,
-    resolve,
-)
+from mlconf.resolver import Resolvers, resolve
 from mlconf.tokenizer import ParseTokenStream, Token, TokenType
 from mlconf.word import Word
 
@@ -159,8 +154,6 @@ def parse(string: str) -> Config:
     parse_token_stream = ParseTokenStream(string)
     ast = parse_block(parse_token_stream, till_dedent=False)
     config = Config(ast)
-    config = resolve(
-        config,
-        [PythonDataTypeResolver(), EnvironmentVariableResolver(), StringResolver()],
-    )
+    resolvers = Resolvers()
+    config = resolve(config, resolvers)
     return config

@@ -14,7 +14,7 @@ class Resolver(ABC):
 
     @abstractmethod
     def resolve(self, value: Word) -> Any:
-        pass
+        raise NotImplementedError
 
 
 class PythonDataTypeResolver(Resolver):
@@ -55,7 +55,37 @@ class StringResolver(Resolver):
             return value
 
 
-def resolve(config: Config, resolvers: List[Resolver]) -> Any:
+# class VariableResolver(Resolver):
+#     def __init__(self, cfg: Config) -> None:
+#         self.cfg = cfg
+#         self.vars = []
+
+#     def resolve(self, value: Word, var_path: str) -> Any:
+#         self.vars.append(var_path)
+#         if isinstance(value, Word):
+#             if value.text in self.vars:
+#                 self.cfg.get_item_from_dot_notation(var_path)
+#         return value
+
+
+class Resolvers:
+    def __init__(self) -> None:
+        self.python_datatype_resolver = PythonDataTypeResolver()
+        self.environment_variable_resolver = EnvironmentVariableResolver()
+        self.string_resolver = StringResolver()
+        # self.variable_resolver = VariableResolver(cfg)
+
+    def __iter__(self) -> Any:
+        return iter(
+            [
+                self.python_datatype_resolver,
+                self.environment_variable_resolver,
+                self.string_resolver,
+            ]
+        )
+
+
+def resolve(config: Config, resolvers: Resolvers) -> Any:
     for key, value in config.items():
         if isinstance(value, Config):
             resolve(value, resolvers)
@@ -70,7 +100,7 @@ def resolve(config: Config, resolvers: List[Resolver]) -> Any:
     return config
 
 
-def resolve_list(value: List[Any], resolvers: List[Resolver]) -> List[Any]:
+def resolve_list(value: List[Any], resolvers: Resolvers) -> List[Any]:
     for i, item in enumerate(value):
         if isinstance(item, Config):
             resolve(item, resolvers)
@@ -85,7 +115,7 @@ def resolve_list(value: List[Any], resolvers: List[Resolver]) -> List[Any]:
     return value
 
 
-def resolve_tuple(value: Tuple[Any], resolvers: List[Resolver]) -> Tuple[Any]:
+def resolve_tuple(value: Tuple[Any], resolvers: Resolvers) -> Tuple[Any]:
     value_list: List[Any] = list(value)
     for i, item in enumerate(value):
         if isinstance(item, Config):
