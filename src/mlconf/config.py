@@ -4,30 +4,30 @@ from typing import Any, Dict, List, Tuple
 
 class Config:
     def __init__(self, config: Dict[str, Any]) -> None:
-        self.dict: Dict[str, Any] = {}
+        self._config: Dict[str, Any] = {}
         for key, value in config.items():
             assert isinstance(key, str), "Key must be a string"
             self.__setitem__(key, value)
 
     def __getitem__(self, key: str) -> Any:
-        return self.dict[key]
+        return self._config[key]
 
     def __getattr__(self, key: str) -> Any:
-        return self.dict[key]
+        return self._config[key]
 
     def __setitem__(self, key: str, value: Any) -> None:
         if isinstance(value, Dict):
-            self.dict[key] = Config(value)
+            self._config[key] = Config(value)
         elif isinstance(value, List):
             value = list(value)
             value = self.resolve_list(value)
-            self.dict[key] = value
+            self._config[key] = value
         elif isinstance(value, tuple):
             value = list(value)
             value = self.resolve_tuple(value)
-            self.dict[key] = value
+            self._config[key] = value
         else:
-            self.dict[key] = value
+            self._config[key] = value
 
     def resolve_list(self, value: List[Any]) -> List[Any]:
         for i, item in enumerate(value):
@@ -55,50 +55,50 @@ class Config:
         return tuple(value_list)
 
     def __setattr__(self, key: str, value: Any) -> None:
-        if key == "dict":
-            self.__dict__["dict"] = value
-        elif key not in self.dict:
+        if key == "_config":
+            self.__dict__["_config"] = value
+        elif key not in self._config:
             raise AttributeError(f"'Config' object has no attribute '{key}'")
         elif isinstance(value, Dict):
-            self.dict[key] = Config(value)
+            self._config[key] = Config(value)
         else:
-            self.dict[key] = value
+            self._config[key] = value
 
     def __eq__(self, other: Any) -> bool:
-        for key, value in self.dict.items():
-            if key not in other.dict or value != other.dict[key]:
+        for key, value in self._config.items():
+            if key not in other._config or value != other._config[key]:
                 return False
-        for key, value in other.dict.items():
-            if key not in self.dict or value != self.dict[key]:
+        for key, value in other._config.items():
+            if key not in self._config or value != self._config[key]:
                 return False
         return True
 
     def __repr__(self) -> str:
-        return f"Config({self.dict})"
+        return f"Config({self._config})"
 
     def __str__(self) -> str:
-        return str(self.dict)
+        return str(self._config)
 
     def __len__(self) -> int:
-        return len(self.dict)
+        return len(self._config)
 
     def keys(self) -> List[Any]:
-        return list(self.dict.keys())
+        return list(self._config.keys())
 
     def items(self) -> Any:
-        return self.dict.items()
+        return self._config.items()
 
     def __contains__(self, key: str) -> bool:
-        return key in self.dict
+        return key in self._config
 
     def __deepcopy__(self, memo: Dict[int, Any]) -> "Config":
         new_instance = Config({})
-        new_instance.__dict__["dict"] = copy.deepcopy(self.dict, memo)
+        new_instance.__dict__["_config"] = copy.deepcopy(self._config, memo)
         return new_instance
 
     def get_item_from_dot_notation(self, item: str) -> Any:
         keys = item.split(".")
-        value = self.dict
+        value = self._config
         for key in keys:
             if key not in value:
                 raise KeyError(f"'{item}' not found in config")
