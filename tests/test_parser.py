@@ -46,5 +46,15 @@ def test_test1_config(test1_config_str):
     assert conf.a5 == "True"
     assert conf.a6 == "$123"
     assert conf.a7 == os.environ["HOME"]
-    # tree = config_to_tree(conf)
-    # print_tree(tree)
+
+
+def test_test1_var(test1_var_str):
+    conf = parse(test1_var_str)
+    assert conf.a1 == "hello"
+    assert conf.a2.b1 == "world"
+    assert conf.a3 == conf.a1
+    assert conf.a4 == conf.a2.b1
+    assert conf.a5.b1.c1[0] == "world"
+    assert conf.a5.b1.c1[1] == os.environ["HOME"]
+    assert conf.a5.b1.c1[2].b1 == "world"
+    assert conf.a5.b1.c1[2].b2 == os.environ["HOME"]

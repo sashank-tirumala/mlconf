@@ -37,3 +37,11 @@ def test1_config_str(config_dir):
     with open(test1) as f:
         test_1_str = f.read()
     return test_1_str
+
+
+@pytest.fixture
+def test1_var_str(config_dir):
+    test1 = config_dir / "test_var.conf"
+    with open(test1) as f:
+        test_1_str = f.read()
+    return test_1_str

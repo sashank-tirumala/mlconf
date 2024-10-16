@@ -1,7 +1,7 @@
 import os
 import re
 from abc import ABC, abstractmethod
-from typing import Any, List, Tuple
+from typing import Any, List, Set, Tuple
 
 from mlconf.config import Config
 from mlconf.regex_utils import REGEX_FLOAT_MATCH, REGEX_INT_MATCH
@@ -55,77 +55,80 @@ class StringResolver(Resolver):
             return value
 
 
-# class VariableResolver(Resolver):
-#     def __init__(self, cfg: Config) -> None:
-#         self.cfg = cfg
-#         self.vars = []
+class VariableResolver:
+    def __init__(self, cfg: Config) -> None:
+        self.cfg = cfg
+        self.vars: Set[str] = set()
 
-#     def resolve(self, value: Word, var_path: str) -> Any:
-#         self.vars.append(var_path)
-#         if isinstance(value, Word):
-#             if value.text in self.vars:
-#                 self.cfg.get_item_from_dot_notation(var_path)
-#         return value
+    def resolve(self, value: Word, var_path: str) -> Any:
+        self.vars.add(var_path)
+        if isinstance(value, Word):
+            if value.text in self.vars:
+                return self.cfg.get_item_from_dot_notation(value.text)
+        return value
 
 
 class Resolvers:
-    def __init__(self) -> None:
+    def __init__(self, cfg: Config) -> None:
         self.python_datatype_resolver = PythonDataTypeResolver()
         self.environment_variable_resolver = EnvironmentVariableResolver()
+        self.variable_resolver = VariableResolver(cfg)
         self.string_resolver = StringResolver()
-        # self.variable_resolver = VariableResolver(cfg)
 
-    def __iter__(self) -> Any:
-        return iter(
-            [
-                self.python_datatype_resolver,
-                self.environment_variable_resolver,
-                self.string_resolver,
-            ]
-        )
+    def resolve(self, value: Any, var_path: str = "") -> Any:
+        value = self.python_datatype_resolver.resolve(value)
+        value = self.environment_variable_resolver.resolve(value)
+        value = self.variable_resolver.resolve(value, var_path)
+        value = self.string_resolver.resolve(value)
+        return value
+
+    def update_vars(self, prefix: str) -> None:
+        self.variable_resolver.vars.add(prefix)
 
 
-def resolve(config: Config, resolvers: Resolvers) -> Any:
+def resolve(config: Config, resolvers: Resolvers, prefix: str = "") -> Any:
     for key, value in config.items():
         if isinstance(value, Config):
-            resolve(value, resolvers)
+            resolve(value, resolvers, prefix + key + ".")
         elif isinstance(value, List):
-            config[key] = resolve_list(value, resolvers)
+            config[key] = resolve_list(value, resolvers, prefix + key + ".")
         elif isinstance(value, tuple):
-            config[key] = resolve_tuple(value, resolvers)
+            config[key] = resolve_tuple(value, resolvers, prefix + key + ".")
         else:
-            for resolver in resolvers:
-                value = resolver.resolve(value)
+            value = resolvers.resolve(value, prefix + key)
             config[key] = value
+    resolvers.update_vars(prefix[:-1])
     return config
 
 
-def resolve_list(value: List[Any], resolvers: Resolvers) -> List[Any]:
+def resolve_list(value: List[Any], resolvers: Resolvers, prefix: str = "") -> List[Any]:
     for i, item in enumerate(value):
         if isinstance(item, Config):
-            resolve(item, resolvers)
+            resolve(item, resolvers, prefix + str(i) + ".")
         elif isinstance(item, List):
-            value[i] = resolve_list(item, resolvers)
+            value[i] = resolve_list(item, resolvers, prefix + str(i) + ".")
         elif isinstance(item, tuple):
-            value[i] = resolve_tuple(item, resolvers)
+            value[i] = resolve_tuple(item, resolvers, prefix + str(i) + ".")
         else:
-            for resolver in resolvers:
-                item = resolver.resolve(item)
+            item = resolvers.resolve(item, prefix + str(i))
             value[i] = item
+    resolvers.update_vars(prefix[:-1])
     return value
 
 
-def resolve_tuple(value: Tuple[Any], resolvers: Resolvers) -> Tuple[Any]:
+def resolve_tuple(
+    value: Tuple[Any], resolvers: Resolvers, prefix: str = ""
+) -> Tuple[Any]:
     value_list: List[Any] = list(value)
     for i, item in enumerate(value):
         if isinstance(item, Config):
-            resolve(item, resolvers)
+            resolve(item, resolvers, prefix + str(i) + ".")
         elif isinstance(item, List):
-            value_list[i] = resolve_list(item, resolvers)
+            value_list[i] = resolve_list(item, resolvers, prefix + str(i) + ".")
         elif isinstance(item, tuple):
-            value_list[i] = resolve_tuple(item, resolvers)
+            value_list[i] = resolve_tuple(item, resolvers, prefix + str(i) + ".")
         else:
-            for resolver in resolvers:
-                item = resolver.resolve(item)
+            item = resolvers.resolve(item, prefix + str(i))
             value_list[i] = item
+    resolvers.update_vars(prefix)
     return tuple(value_list)

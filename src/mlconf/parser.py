@@ -154,6 +154,6 @@ def parse(string: str) -> Config:
     parse_token_stream = ParseTokenStream(string)
     ast = parse_block(parse_token_stream, till_dedent=False)
     config = Config(ast)
-    resolvers = Resolvers()
+    resolvers = Resolvers(config)
     config = resolve(config, resolvers)
     return config
