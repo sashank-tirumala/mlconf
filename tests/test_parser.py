@@ -37,6 +37,7 @@ def test_test1_config(test1_config_str):
     assert conf.a4.b7.c9[1] == 10.2
     assert "list" in conf.a4.b7.c9[2]
     assert conf.a4.b7.c9[2].list.a == 1
+    assert conf.a4.b7.c9.l2.list.a == 1
     assert conf.a4.b7.c9[2]["list"]["b"] == 2
     assert conf.a4.b7.c9[2].list.c.d == 3
     assert conf.a4.b7.c9[2].list.c.e[0] == 1
@@ -47,6 +48,8 @@ def test_test1_config(test1_config_str):
     assert conf.a6 == "$123"
     assert conf.a7 == os.environ["HOME"]
     assert conf.a8.b8[0] == conf.a1.b4.c5.d5
+    assert conf.a8.b8[1] == conf.a1.b4.c5.d4.l1
+    assert conf.a8.b8[2] == conf.a4.b7.c9[2].list.c.e[1][1][0]
 
 
 def test_test1_var(test1_var_str):

@@ -1,6 +1,8 @@
 import copy
 from typing import Any, Dict, List, Tuple
 
+from mlconf.extended_list_and_tuple import ExtendedList, ExtendedTuple
+
 
 class Config:
     def __init__(self, config: Dict[str, Any]) -> None:
@@ -39,7 +41,7 @@ class Config:
                 value[i] = self.resolve_tuple(item)
             else:
                 value[i] = item
-        return value
+        return ExtendedList(value)
 
     def resolve_tuple(self, value: Tuple[Any]) -> Tuple[Any]:
         value_list: List[Any] = list(value)
@@ -52,7 +54,7 @@ class Config:
                 value_list[i] = self.resolve_tuple(item)
             else:
                 value_list[i] = item
-        return tuple(value_list)
+        return ExtendedTuple(value_list)
 
     def __setattr__(self, key: str, value: Any) -> None:
         if key == "_config":
@@ -65,6 +67,8 @@ class Config:
             self._config[key] = value
 
     def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Config):
+            return False
         for key, value in self._config.items():
             if key not in other._config or value != other._config[key]:
                 return False

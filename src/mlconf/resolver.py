@@ -63,9 +63,6 @@ class VariableResolver:
     def resolve(self, value: Word, var_path: str) -> Any:
         self.vars.add(var_path)
         if isinstance(value, Word):
-            # if value.text == "a1.b4.c5.d5":
-            #     breakpoint()
-            #     z=1
             if value.text in self.vars:
                 return self.cfg.get_item_from_dot_notation(value.text)
         return value
@@ -107,13 +104,13 @@ def resolve(config: Config, resolvers: Resolvers, prefix: str = "") -> Any:
 def resolve_list(value: List[Any], resolvers: Resolvers, prefix: str = "") -> List[Any]:
     for i, item in enumerate(value):
         if isinstance(item, Config):
-            resolve(item, resolvers, prefix + str(i) + ".")
+            resolve(item, resolvers, prefix + "l" + str(i) + ".")
         elif isinstance(item, List):
-            value[i] = resolve_list(item, resolvers, prefix + str(i) + ".")
+            value[i] = resolve_list(item, resolvers, prefix + "l" + str(i) + ".")
         elif isinstance(item, tuple):
-            value[i] = resolve_tuple(item, resolvers, prefix + str(i) + ".")
+            value[i] = resolve_tuple(item, resolvers, prefix + "l" + str(i) + ".")
         else:
-            item = resolvers.resolve(item, prefix + str(i))
+            item = resolvers.resolve(item, prefix + "l" + str(i))
             value[i] = item
     resolvers.update_vars(prefix[:-1])
     return value
@@ -125,13 +122,13 @@ def resolve_tuple(
     value_list: List[Any] = list(value)
     for i, item in enumerate(value):
         if isinstance(item, Config):
-            resolve(item, resolvers, prefix + str(i) + ".")
+            resolve(item, resolvers, prefix + "t" + str(i) + ".")
         elif isinstance(item, List):
-            value_list[i] = resolve_list(item, resolvers, prefix + str(i) + ".")
+            value_list[i] = resolve_list(item, resolvers, prefix + "t" + str(i) + ".")
         elif isinstance(item, tuple):
-            value_list[i] = resolve_tuple(item, resolvers, prefix + str(i) + ".")
+            value_list[i] = resolve_tuple(item, resolvers, prefix + "t" + str(i) + ".")
         else:
-            item = resolvers.resolve(item, prefix + str(i))
+            item = resolvers.resolve(item, prefix + "t" + str(i))
             value_list[i] = item
     resolvers.update_vars(prefix[:-1])
     return tuple(value_list)
