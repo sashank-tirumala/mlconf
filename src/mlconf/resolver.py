@@ -63,6 +63,9 @@ class VariableResolver:
     def resolve(self, value: Word, var_path: str) -> Any:
         self.vars.add(var_path)
         if isinstance(value, Word):
+            # if value.text == "a1.b4.c5.d5":
+            #     breakpoint()
+            #     z=1
             if value.text in self.vars:
                 return self.cfg.get_item_from_dot_notation(value.text)
         return value
@@ -130,5 +133,5 @@ def resolve_tuple(
         else:
             item = resolvers.resolve(item, prefix + str(i))
             value_list[i] = item
-    resolvers.update_vars(prefix)
+    resolvers.update_vars(prefix[:-1])
     return tuple(value_list)

@@ -46,6 +46,7 @@ def test_test1_config(test1_config_str):
     assert conf.a5 == "True"
     assert conf.a6 == "$123"
     assert conf.a7 == os.environ["HOME"]
+    assert conf.a8.b8[0] == conf.a1.b4.c5.d5
 
 
 def test_test1_var(test1_var_str):
