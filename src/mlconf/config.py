@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Tuple
 
 class Config:
     def __init__(self, config: Dict[str, Any]) -> None:
-        self.__dict__["dict"] = {}
+        self.dict: Dict[str, Any] = {}
         for key, value in config.items():
             assert isinstance(key, str), "Key must be a string"
             self.__setitem__(key, value)
