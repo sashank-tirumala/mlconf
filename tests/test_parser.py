@@ -72,8 +72,14 @@ def test_bad_indent(bad_indent_config: str) -> None:
     assert "Error at line 7:" in str(exc_info.value)
 
 
-# def test_parse_import_config(test_import_config: str) -> None:
-#     conf = parse(test_import_config)
-#     assert conf.a == "Hello from level 2 nested dir"
-#     assert conf.b.c == "Hello from same dir"
-#     assert conf.b.d == "Hello from level 1 nested dir"
+def test_parse_import_config(test_import_config: str) -> None:
+    # from mlconf.tokenizer import get_raw_tokens, get_tokens
+    from mlconf.parser import parse_imports, ParseTokenStream, ImportValue
+
+    stream = ParseTokenStream(test_import_config)
+    imports = parse_imports(stream)
+    assert imports == [
+        ImportValue("imp", "imp_same_dir"),
+        ImportValue("b.imp2", "imp_nested_dir"),
+        ImportValue("b.c.imp3", "imp3"),
+    ]

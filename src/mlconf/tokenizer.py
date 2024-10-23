@@ -275,3 +275,6 @@ class ParseTokenStream:
     def croak(self, message: str) -> None:
         line = self.tokens[self.idx].line
         raise Exception(f"Error at line {line}: {message}\n{self.lines[line]}")
+
+    def get_tokens_left(self) -> List[Token]:
+        return self.tokens[self.idx :]

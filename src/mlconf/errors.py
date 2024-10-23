@@ -1,0 +1,2 @@
+class InvalidImportLocationError(Exception):
+    pass
