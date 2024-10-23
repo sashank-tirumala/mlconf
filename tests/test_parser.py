@@ -1,5 +1,7 @@
 import os
 
+import pytest
+
 from mlconf.parser import parse
 
 
@@ -62,3 +64,16 @@ def test_test1_var(test1_var_str):
     assert conf.a5.b1.c1[1] == os.environ["HOME"]
     assert conf.a5.b1.c1[2].b1 == "world"
     assert conf.a5.b1.c1[2].b2 == os.environ["HOME"]
+
+
+def test_bad_indent(bad_indent_config: str) -> None:
+    with pytest.raises(IndentationError) as exc_info:
+        parse(bad_indent_config)
+    assert "Error at line 4:" in str(exc_info.value)
+
+
+# def test_parse_import_config(test_import_config: str) -> None:
+#     conf = parse(test_import_config)
+#     assert conf.a == "Hello from level 2 nested dir"
+#     assert conf.b.c == "Hello from same dir"
+#     assert conf.b.d == "Hello from level 1 nested dir"

@@ -202,9 +202,21 @@ def filter_nonindent_whitespace_tokens(tokens: List[Token]) -> List[Token]:
     return [token for i, token in enumerate(tokens) if i not in invalid_idxs]
 
 
+def get_first_whitespace_indent_token(tokens: List[Token]) -> Token:
+    encountered_word = False
+    for token in tokens:
+        if token.token_type == TokenType.WHITESPACE_INDENT and not encountered_word:
+            return token
+        if token.token_type == TokenType.WORD:
+            encountered_word = True
+            break
+    return Token(TokenType.WHITESPACE_INDENT, "0")
+
+
 def replace_whitespace_with_indent_dedent_tokens(tokens: List[Token]) -> List[Token]:
     white_space_tokens: List[Token] = []
-    white_space_tokens.append(Token(TokenType.WHITESPACE_INDENT, "0"))
+    white_space_tokens.append(get_first_whitespace_indent_token(tokens))
+    minimum_indent = int(white_space_tokens[0].value)
     res_tokens: List[Token] = []
     for i, token in enumerate(tokens):
         if token.token_type == TokenType.WHITESPACE_INDENT:
@@ -224,6 +236,10 @@ def replace_whitespace_with_indent_dedent_tokens(tokens: List[Token]) -> List[To
                         )
                     res_tokens.append(Token(TokenType.DEDENT, "", token.line))
                     white_space_tokens.pop()
+                    if len(white_space_tokens) == 0:
+                        raise IndentationError(f"Error at line {token.line+1}: Indentation is\
+                            lesser than minimum indentation level {minimum_indent} set at start of file.\
+                            To fix remove all leading whitespaces/ tabs from the start of the file")
                     top_token = white_space_tokens[-1]
         else:
             res_tokens.append(token)
