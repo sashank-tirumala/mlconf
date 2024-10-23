@@ -69,7 +69,7 @@ def test_test1_var(test1_var_str):
 def test_bad_indent(bad_indent_config: str) -> None:
     with pytest.raises(IndentationError) as exc_info:
         parse(bad_indent_config)
-    assert "Error at line 4:" in str(exc_info.value)
+    assert "Error at line 7:" in str(exc_info.value)
 
 
 # def test_parse_import_config(test_import_config: str) -> None:
