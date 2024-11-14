@@ -13,10 +13,14 @@ class CharStream:
         final_lines = []
         for i, line in enumerate(lines):
             is_empty = True
+            final_char = ""
             for char in line:
                 if char != " ":
                     is_empty = False
+                    final_char = char
                     break
+            if final_char == "#":
+                continue
             if not is_empty:
                 final_lines.append(line + "\n")
         final_lines[-1] = final_lines[-1].rstrip("\n")
