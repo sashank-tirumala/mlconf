@@ -5,6 +5,10 @@ import pytest
 from mlconf.parser import parse
 
 
+def pretty_print(items: list) -> None:
+    print("\n".join(str(item) for item in items))
+
+
 def test_parser(simple_config_str, simple_config_dict_str):
     conf = parse(simple_config_str)
     assert conf.training.name == "MLConf"
@@ -14,6 +18,10 @@ def test_parser(simple_config_str, simple_config_dict_str):
 
 
 def test_test1_config(test1_config_str):
+    # from mlconf.tokenizer import get_tokens, get_raw_tokens
+    # raw_tokens = get_raw_tokens(test1_config_str)
+    # tokens = get_tokens(test1_config_str)
+    # breakpoint()
     conf = parse(test1_config_str)
     assert conf.a1.b1.c1 == 122
     assert conf.a1.b1.c2 == 2.01
@@ -52,6 +60,7 @@ def test_test1_config(test1_config_str):
     assert conf.a8.b8[0] == conf.a1.b4.c5.d5
     assert conf.a8.b8[1] == conf.a1.b4.c5.d4.l1
     assert conf.a8.b8[2] == conf.a4.b7.c9[2].list.c.e[1][1][0]
+    # assert conf.a8.b9 == conf.a1.b4.c5.d3
 
 
 def test_test1_var(test1_var_str):

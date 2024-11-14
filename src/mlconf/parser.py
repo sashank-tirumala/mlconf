@@ -4,10 +4,17 @@ from mlconf.config import Config
 from mlconf.resolver import Resolvers, resolve
 from mlconf.tokenizer import ParseTokenStream, Token, TokenType
 from mlconf.word import Word
-from mlconf.errors import InvalidImportLocationError
 
 INLINE_LIST_DELIMITER = Token(TokenType.PUNC, "]")
 INLINE_LIST_SEPARATOR = Token(TokenType.PUNC, ",")
+
+
+def skip_tokens(token_stream: ParseTokenStream, token_types: List[TokenType]) -> None:
+    while True:
+        token = token_stream.peek()
+        if token.token_type not in token_types:
+            break
+        token_stream.next()
 
 
 def parse_block(
@@ -55,6 +62,9 @@ def parse_block(
             token_stream.next()
         elif token.token_type == TokenType.EOF:
             break
+        # elif token.token_type == TokenType.KEY_WORD and till_dedent is False:
+        #     if token.value == KeyWords.IMPORT:
+        #         parse_
         else:
             token_stream.croak(
                 f"Expected WORD or NEWLINE token, but got {token.token_type}"
@@ -149,80 +159,6 @@ def parse_tuple(token_stream: ParseTokenStream) -> Tuple[Any]:
     )
     res_tuple = tuple(res)
     return res_tuple
-
-
-class ImportValue:
-    def __init__(self, path: str = "", alias: str = "") -> None:
-        self.path = path
-        self.alias = alias
-
-    def __str__(self) -> str:
-        return f"Import({self.path}, {self.alias})"
-
-    def __repr__(self) -> str:
-        return self.__str__()
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, ImportValue):
-            return False
-        return self.path == other.path and self.alias == other.alias
-
-
-def parse_imports(token_stream: ParseTokenStream) -> List[ImportValue]:
-    imports: List[ImportValue] = []
-    while not token_stream.is_eof():
-        token = token_stream.peek()
-        if token.token_type == TokenType.WORD and token.value == "import":
-            current_import = ImportValue()
-            token_stream.next()
-            token = token_stream.peek()
-            if token.token_type == TokenType.WORD:
-                current_import.path = token.value
-                # TODO: Assert path exists
-                token_stream.next()
-                token = token_stream.peek()
-                if token.token_type == TokenType.WORD and token.value == "as":
-                    token_stream.next()
-                    token = token_stream.peek()
-                    if token.token_type == TokenType.WORD:
-                        alias = token.value
-                        current_import.alias = alias
-                        token_stream.next()
-                        token = token_stream.peek()
-                        if token.token_type == TokenType.NEWLINE:
-                            token_stream.next()
-                        else:
-                            token_stream.croak(
-                                f"Expected NEWLINE, but got {token.value}"
-                            )
-                    else:
-                        token_stream.croak(
-                            f"Expected alias for import, but got {token.value}"
-                        )
-                else:
-                    current_import.alias = current_import.path.split(".")[-1]
-                    token_stream.next()
-                    token = token_stream.peek()
-                    if token.token_type == TokenType.NEWLINE:
-                        token_stream.next()
-                    else:
-                        token_stream.croak(f"Expected NEWLINE, but got {token.value}")
-                imports.append(current_import)
-            else:
-                token_stream.croak(
-                    f"Expected Path to import file, but got {token.value}"
-                )
-        elif token.token_type == TokenType.NEWLINE:
-            token_stream.next()
-        else:
-            break
-    tokens_left = token_stream.get_tokens_left()
-    for token in tokens_left:
-        if token.token_type == TokenType.WORD and token.value == "import":
-            raise InvalidImportLocationError(
-                f"Error at line {token.line}: Import statements should be at the top of the file"
-            )
-    return imports
 
 
 def parse(string: str) -> Config:

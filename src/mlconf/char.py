@@ -10,11 +10,18 @@ class CharStream:
     @staticmethod
     def get_lines(string: str) -> List[str]:
         lines = string.split("\n")
+        final_lines = []
         for i, line in enumerate(lines):
-            lines[i] = line + "\n"
-        lines[-1] = lines[-1].rstrip("\n")
-        lines[-1] += "\0"
-        return lines
+            is_empty = True
+            for char in line:
+                if char != " ":
+                    is_empty = False
+                    break
+            if not is_empty:
+                final_lines.append(line + "\n")
+        final_lines[-1] = final_lines[-1].rstrip("\n")
+        final_lines[-1] += "\0"
+        return final_lines
 
     def peek(self) -> str:
         assert self.row < len(self.lines)

@@ -6,18 +6,36 @@ from mlconf.char import CharStream
 
 class TokenType(Enum):
     WORD = 1
-    STRING = 2
-    PUNC = 3
-    NEWLINE = 4
-    WHITESPACE = 5
-    WHITESPACE_INDENT = 6
-    INDENT = 7
-    DEDENT = 8
-    EOF = 9
+    KEY_WORD = 2
+    STRING = 3
+    PUNC = 4
+    NEWLINE = 5
+    WHITESPACE = 6
+    WHITESPACE_INDENT = 7
+    INDENT = 8
+    DEDENT = 9
+    EOF = 10
+
+
+class KeyWords(Enum):
+    IMPORT = 0
+    AS = 1
+    EXTENDS = 2
+
+    @classmethod
+    def contains(cls, val: str) -> bool:
+        return any(val.upper() == item.name for item in cls)
+
+    @classmethod
+    def get_enum(cls, val: str) -> "KeyWords":
+        for item in cls:
+            if val.upper() == item.name:
+                return item
+        raise ValueError(f"KeyWord {val} not found")
 
 
 class Token:
-    def __init__(self, token_type: TokenType, value: str, line: int = -1) -> None:
+    def __init__(self, token_type: TokenType, value: Any, line: int = -1) -> None:
         self.token_type = token_type
         self.value = value
         self.line = line
@@ -67,7 +85,12 @@ class TokenStream:
                 ch
                 in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*_+=<>?/\\|;."
             ):
-                return self.get_word()
+                token = self.get_word()
+                if KeyWords.contains(token.value):
+                    token = Token(
+                        TokenType.KEY_WORD, KeyWords.get_enum(token.value), token.line
+                    )
+                return token
             else:
                 self.ch.croak("Unknown character")
         return Token(TokenType.EOF, "", self.ch.row + 1)
